@@ -1,0 +1,3319 @@
+Lucene
+
+非结构化数据查询方法
+（1）顺序扫描法(Serial Scanning)
+所谓顺序扫描，比如要找内容包含某一个字符串的文件，就是一个文档一个文档的看，对于每一个文档，
+从头看到尾，如果此文档包含此字符串，则此文档为我们要找的文件，接着看下一个文件，
+直到扫描完所有的文件。如利用windows的搜索也可以搜索文件内容，只是相当的慢。
+（2）全文检索(Full-text Search)
+将非结构化数据中的一部分信息提取出来，重新组织，使其变得有一定结构，然后对此有一定结构的数据进行搜索，
+从而达到搜索相对较快的目的。这部分从非结构化数据中提取出的然后重新组织的信息，我们称之索引。
+例如：字典。字典的拼音表和部首检字表就相当于字典的索引，对每一个字的解释是非结构化的，
+如果字典没有音节表和部首检字表，在茫茫辞海中找一个字只能顺序扫描。然而字的某些信息可以提取出来进行结构化处理，
+比如读音，就比较结构化，分声母和韵母，分别只有几种可以一一列举，于是将读音拿出来按一定的顺序排列，
+每一项读音都指向此字的详细解释的页数。我们搜索时按结构化的拼音搜到读音，然后按其指向的页数，便可找到我们的非结构化数据——也即对字的解释。
+这种先建立索引，再对索引进行搜索的过程就叫全文检索(Full-text Search)。
+虽然创建索引的过程也是非常耗时的，但是索引一旦创建就可以多次使用，全文检索主要处理的是查询，所以耗时间创建索引是值得的。
+
+
+
+Lucene是apache下的一个开放源代码的全文检索引擎工具包。提供了完整的查询引擎和索引引擎，部分文本分析引擎。
+对于数据量大、数据结构不固定的数据可采用全文检索方式搜索，比如百度、Google等搜索引擎、论坛站内搜索、电商网站站内搜索等。
+对搜索的原始内容进行索引构建一个索引库，索引过程包括：确定原始内容即要搜索的内容、采集文档、创建文档、分析文档、索引文档
+从索引库中搜索内容，搜索过程包括：用户通过搜索界面、创建查询、执行搜索，从索引库搜索、渲染搜索结果
+
+
+
+创建索引
+对文档索引的过程，将用户要搜索的文档内容进行索引，索引存储在索引库（index）中。
+这里我们要搜索的文档是磁盘上的文本文件，凡是文件名或文件内容包括关键字的文件都要找出来，这里要对文件名和文件内容创建索引。
+
+获得原始文档
+原始文档是指要索引和搜索的内容。原始内容包括互联网上的网页、数据库中的数据、磁盘上的文件等。
+
+创建文档对象
+获取原始内容的目的是为了索引，在索引前需要将原始内容创建成文档（Document），文档中包括一个一个的域（Field），域中存储内容。
+这里我们可以将磁盘上的一个文件当成一个document，Document中包括一些Field（file_name文件名称、file_path文件路径、file_size文件大小、file_content文件内容）
+注意：
+	每个Document可以有多个Field，不同的Document可以有不同的Field，同一个Document可以有相同的Field（域名和域值都相同）
+	每个文档都有一个唯一的编号，就是文档id。
+	
+分析文档
+将原始内容创建为包含域（Field）的文档（document），需要再对域中的内容进行分析，分析的过程是经过对原始文档提取单词、
+将字母转为小写、去除标点符号、去除停用词等过程生成最终的语汇单元，可以将语汇单元理解为一个一个的单词。
+每个单词叫做一个Term，不同的域中拆分出来的相同的单词是不同的term。term中包含两部分一部分是文档的域名，另一部分是单词的内容。
+例如：文件名中包含apache和文件内容中包含的apache是不同的term。
+
+创建索引
+对所有文档分析得出的语汇单元进行索引，索引的目的是为了搜索，最终要实现只搜索被索引的语汇单元从而找到Document（文档）。
+注意：创建索引是对语汇单元索引，通过词语找文档，这种索引的结构叫倒排索引结构。
+传统方法是根据文件找到该文件的内容，在文件内容中匹配搜索关键字，这种方法是顺序扫描方法，数据量大、搜索慢。
+倒排索引结构是根据内容（词语）找文档，倒排索引结构也叫反向索引结构，包括索引和文档两部分，索引即词汇表，它的规模较小，而文档集合较大。
+
+
+
+查询索引
+查询索引也是搜索的过程。搜索就是用户输入关键字，从索引（index）中进行搜索的过程。
+根据关键字搜索索引，根据索引找到对应的文档，从而找到要搜索的内容（这里指磁盘上的文件）。
+
+创建查询
+用户输入查询关键字执行搜索之前需要先构建一个查询对象，查询对象中可以指定查询要搜索的Field文档域、查询关键字等，查询对象会生成具体的查询语法，
+例如：
+语法 “fileName:lucene”表示要搜索Field域的内容为“lucene”的文档
+
+
+执行查询
+搜索索引过程：
+根据查询语法在倒排索引词典表中分别找出对应搜索词的索引，从而找到索引所链接的文档链表。
+比如搜索语法为“fileName:lucene”表示搜索出fileName域中包含Lucene的文档。
+搜索过程就是在索引上查找域为fileName，并且关键字为Lucene的term，并根据term找到文档id列表。
+
+
+使用lucene创建索引库
+public void createIndex() throws Exception {
+	//1、创建一个Director对象，指定索引库保存的位置。
+	//把索引库保存在内存中
+	//Directory directory = new RAMDirectory();
+	//把索引库保存在磁盘
+	Directory directory = FSDirectory.open(new File("D:\\1_Code\\java\\lucene\\temp\\index").toPath());
+	//2、基于Directory对象创建一个IndexWriter对象
+//        IndexWriterConfig config = new IndexWriterConfig(new IKAnalyzer());
+	IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig());
+	//3、读取磁盘上的文件，对应每个文件创建一个文档对象。
+	File dir = new File("D:\\1_Code\\java\\lucene\\searchsource");
+	File[] files = dir.listFiles();
+	for (File f : files) {
+		//取文件名
+		String fileName = f.getName();
+		//文件的路径
+		String filePath = f.getPath();
+		//文件的内容
+		String fileContent = FileUtils.readFileToString(f, "utf-8");
+		//文件的大小
+		long fileSize = FileUtils.sizeOf(f);
+		//创建Field
+		//参数1：域的名称，参数2：域的内容，参数3：是否存储
+		Field fieldName = new TextField("name", fileName, Field.Store.YES);
+		Field fieldPath = new TextField("path", filePath, Field.Store.YES);
+//            Field fieldPath = new StoredField("path", filePath);
+		Field fieldContent = new TextField("content", fileContent, Field.Store.YES);
+		Field fieldSize = new TextField("size", fileSize + "", Field.Store.YES);
+//            Field fieldSizeValue = new LongPoint("size", fileSize);
+//            Field fieldSizeStore = new StoredField("size", fileSize);
+		//创建文档对象
+		Document document = new Document();
+		//向文档对象中添加域
+		document.add(fieldName);
+		document.add(fieldPath);
+		document.add(fieldContent);
+		document.add(fieldSize);
+//            document.add(fieldSizeValue);
+//            document.add(fieldSizeStore);
+		//5、把文档对象写入索引库
+		indexWriter.addDocument(document);
+	}
+	//6、关闭indexwriter对象
+	indexWriter.close();
+}
+
+
+查询保存的索引
+public void searchIndex() throws Exception {
+	//1、创建一个Director对象，指定索引库的位置
+	Directory directory = FSDirectory.open(new File("D:\\1_Code\\java\\lucene\\temp\\index").toPath());
+	//2、创建一个IndexReader对象
+	IndexReader indexReader = DirectoryReader.open(directory);
+	//3、创建一个IndexSearcher对象，构造方法中的参数indexReader对象。
+	IndexSearcher indexSearcher = new IndexSearcher(indexReader);
+	//4、创建一个Query对象，TermQuery
+	Query query = new TermQuery(new Term("name", "spring"));
+	//5、执行查询，得到一个TopDocs对象
+	//参数1：查询对象 参数2：查询结果返回的最大记录数
+	TopDocs topDocs = indexSearcher.search(query, 10);
+	//6、取查询结果的总记录数
+	System.out.println("查询总记录数：" + topDocs.totalHits);
+	//7、取文档列表
+	ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+	//8、打印文档中的内容
+	for (ScoreDoc doc :
+			scoreDocs) {
+		//取文档id
+		int docId = doc.doc;
+		//根据id取文档对象
+		Document document = indexSearcher.doc(docId);
+		System.out.println(document.get("name"));
+		System.out.println(document.get("path"));
+		System.out.println(document.get("size"));
+		//System.out.println(document.get("content"));
+		System.out.println("-----------------寂寞的分割线");
+	}
+	//9、关闭IndexReader对象
+	indexReader.close();
+}
+
+
+关于分析器
+IndexWriterConfig 默认使用标准分析器 StandardAnalyzer
+public IndexWriterConfig() {
+	this(new StandardAnalyzer());
+}
+
+查看标准分析器的分析效果
+public void testTokenStream() throws Exception {
+	//1）创建一个Analyzer对象，StandardAnalyzer对象
+	Analyzer analyzer = new StandardAnalyzer();
+	//2）使用分析器对象的tokenStream方法获得一个TokenStream对象
+	TokenStream tokenStream = analyzer.tokenStream("", "The Spring Framework provides a comprehensive programming and configuration model.");
+	//3）向TokenStream对象中设置一个引用，相当于数一个指针
+	CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
+	//4）调用TokenStream对象的rest方法，把指针调到最前。如果不调用抛异常
+	tokenStream.reset();
+	//5）使用while循环遍历TokenStream对象
+	while(tokenStream.incrementToken()) {
+		System.out.println(charTermAttribute.toString());
+	}
+	//6）关闭TokenStream对象
+	tokenStream.close();
+}
+
+标准分析器对中文支持不太好，可以使用第三方 IKAnalyzer 分析器
+使用 IKAnalyzer 需要将配置文件和扩展词典添加到工程的classpath下
+扩展词典严禁使用win记事本编辑，需要保证 utf-8格式
+扩展词典可以添加一些新词
+停用词词典可以是一些无意义的词或者是敏感词
+
+Analyzer analyzer = new IKAnalyzer();
+
+
+Field的选择
+StringField(FieldName, FieldValue,Store.YES))
+数据类型 字符串，一般不分析，可以索引和储存
+LongPoint(String name, long... point)
+数据类型 Long型，一般分析和索引，不储存
+StoredField(FieldName, FieldValue) 
+一般只储存，不分析和索引
+TextField(FieldName, FieldValue, Store.NO) 或 TextField(FieldName, reader)
+数据类型 字符串或流，一般分析、索引且储存
+
+之前的Field可以改为
+Field fieldName = new TextField("name", fileName, Field.Store.YES);
+Field fieldPath = new StoredField("path", filePath);
+Field fieldContent = new TextField("content", fileContent, Field.Store.YES);
+// 不储存
+Field fieldSizeValue = new LongPoint("size", fileSize);
+// 只储存
+Field fieldSizeStore = new StoredField("size", fileSize);
+
+
+
+索引库的维护
+
+添加文档
+public void addDocument() throws Exception {
+	//创建一个IndexWriter对象，需要使用IKAnalyzer作为分析器
+	IndexWriter indexWriter =
+			new IndexWriter(FSDirectory.open(new File("D:\\1_Code\\java\\lucene\\temp\\index").toPath()),
+					new IndexWriterConfig(new IKAnalyzer()));
+	//创建一个Document对象
+	Document document = new Document();
+	//向document对象中添加域
+	document.add(new TextField("name", "新添加的文件", Field.Store.YES));
+	document.add(new TextField("content", "新添加的文件内容", Field.Store.NO));
+	document.add(new StoredField("path", "c:/temp/helo"));
+	// 把文档写入索引库
+	indexWriter.addDocument(document);
+	//关闭索引库
+	indexWriter.close();
+}
+
+注意：
+打开一个IndexWrite之后，就会自动在目录中生成一个write.lock文件，并将这个文件夹锁住，若对同一个文件夹再打开一个，
+则会抛出 org.apache.lucene.store.LockObtainFailedException: Lock held by this virtual，因此每次使用完IndexWrite都需要关闭
+
+
+删除全部文档
+public void deleteAllDocument() throws Exception {
+	//删除全部文档
+	indexWriter.deleteAll();
+	//关闭索引库
+	indexWriter.close();
+}
+
+
+根据查询删除,删除name域中包含apache的文档
+public void deleteDocumentByQuery() throws Exception {
+	// 根据查询删除,删除name域中包含apache的文档
+	indexWriter.deleteDocuments(new Term("name", "apache"));
+	indexWriter.close();
+}
+
+更新文档
+更新name域中包含spring的文档
+public void updateDocument() throws Exception {
+	//创建一个新的文档对象
+	Document document = new Document();
+	//向文档对象中添加域
+	document.add(new TextField("name", "更新之后的文档", Field.Store.YES));
+	document.add(new TextField("name1", "更新之后的文档2", Field.Store.YES));
+	document.add(new TextField("name2", "更新之后的文档3", Field.Store.YES));
+	//更新操作
+	indexWriter.updateDocument(new Term("name", "spring"), document);
+	//关闭索引库
+	indexWriter.close();
+}
+
+
+范围查询
+private IndexReader indexReader;
+private IndexSearcher indexSearcher;
+
+@Before
+public void init() throws Exception {
+	indexReader = DirectoryReader.open(FSDirectory.open(new File("D:\\1_Code\\java\\lucene\\temp\\index").toPath()));
+	indexSearcher = new IndexSearcher(indexReader);
+}
+
+@Test
+public void testRangeQuery() throws Exception {
+	//创建一个Query对象 由于size域是 long类型，可以参与运算，进行范围查询
+	Query query = LongPoint.newRangeQuery("size", 0l, 100l);
+	printResult(query);
+}
+
+private void printResult(Query query) throws Exception {
+	//执行查询
+	TopDocs topDocs = indexSearcher.search(query, 10);
+	System.out.println("总记录数：" + topDocs.totalHits);
+	ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+	for (ScoreDoc doc:scoreDocs){
+		//取文档id
+		int docId = doc.doc;
+		//根据id取文档对象
+		Document document = indexSearcher.doc(docId);
+		System.out.println(document.get("name"));
+		System.out.println(document.get("path"));
+		System.out.println(document.get("size"));
+		//System.out.println(document.get("content"));
+		System.out.println("----------------------------");
+	}
+	indexReader.close();
+}
+
+使用QueryParser进行查询
+可以对要查询的内容进行分词，然后基于分词的结果进行查询
+需要添加 QueryParser jar包
+
+@Test
+public void testQueryParser() throws Exception {
+	// 创建一个QueryPaser对象，两个参数
+	// 可以对要查询的内容进行分词，然后基于分词的结果进行查询
+	// QueryParser() 方法 参数1：默认搜索域，参数2：分析器对象
+	QueryParser queryParser = new QueryParser("name", new IKAnalyzer());
+	//使用QueryPaser对象创建一个Query对象
+	Query query = queryParser.parse("lucene是一个Java开发的全文检索工具包");
+	//执行查询
+	printResult(query);
+}
+
+
+Elaticsearch
+Elaticsearch，简称为es， es是一个开源的高扩展的分布式全文检索引擎，它可以近乎实时的存储、检索数据；
+本身扩展性很好，可以扩展到上百台服务器，处理PB级别的数据。es也使用Java开发并使用Lucene作为其核心来实现所有索引和搜索的功能，
+但是它的目的是通过简单的RESTful API来隐藏Lucene的复杂性，从而让全文搜索变得简单。
+
+2013年初，GitHub抛弃了Solr，采取ElasticSearch 来做PB级的搜索。 “GitHub使用ElasticSearch搜索20TB的数据，包括13亿文件和1300亿行代码”
+
+ElasticSearch对比Solr
+- Solr 利用 Zookeeper 进行分布式管理，而 Elasticsearch 自身带有分布式协调管理功能;
+- Solr 支持更多格式的数据，而 Elasticsearch 仅支持json文件格式；
+- Solr 官方提供的功能更多，而 Elasticsearch 本身更注重于核心功能，高级功能多有第三方插件提供；
+- Solr 在传统的搜索应用中表现好于 Elasticsearch，但在处理实时搜索应用时效率明显低于 Elasticsearch
+
+
+安装
+安装elasticsearch-5.6.8后，在config/elasticsearch.yml，增加以下两句命令：
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+这样就允许elasticsearch跨越访问，后面的 elasticsearch-head 插件会用到
+9300是tcp通讯端口，集群间和TCPClient都执行该端口，9200是http协议的RESTful接口
+使用bin目录下的elasticsearch.bat启动服务，访问 http://localhost:9200/ 
+
+安装ES的图形化界面插件 elasticsearch-head-master
+该插件还用来于 nodejs，node -v 查看版本号
+Grunt是基于Node.js的项目构建工具，需要安装 grunt
+在 elasticsearch-head-master 目录下运行
+	npm install -g grunt-cli
+	npm install
+然后启动插件，运行命令
+	grunt server
+	
+安装Postman工具
+Postman是强大网页调试工具的windows客户端，提供功能强大的Web API & HTTP 请求调试。软件功能非常强大，界面简洁明晰、操作方便快捷，设计得很人性化。
+Postman能够发送任何类型的HTTP 请求 (GET, HEAD, POST, PUT..)，且可以附带任何数量的参数。
+
+
+Elasticsearch概念介绍
+Elasticsearch是面向文档(document oriented)的，这意味着它可以存储整个对象或文档(document)。然而它不仅仅是存储，
+还会索引(index)每个文档的内容使之可以被搜索。在Elasticsearch中，你可以对文档（而非成行成列的数据）进行索引、搜索、排序、过滤。
+
+Elasticsearch比传统关系型数据库如下：
+Relational DB -> Databases -> Tables -> Rows -> Columns
+Elasticsearch -> Indices   -> Types  -> Documents -> Fields
+
+索引 index
+一个索引就是一个拥有几分相似特征的文档的集合。比如说，你可以有一个客户数据的索引，另一个产品目录的索引，还有一个订单数据的索引。
+一个索引由一个名字来标识（必须全部是小写字母的），并且当我们要对对应于这个索引中的文档进行索引、搜索、更新和删除的时候，都要使用到这个名字。
+在一个集群中，可以定义任意多的索引。
+
+类型 type
+在一个索引中，你可以定义一种或多种类型。一个类型是你的索引的一个逻辑上的分类/分区，其语义完全由你来定。
+通常，会为具有一组共同字段的文档定义一个类型。比如说，我们假设你运营一个博客平台并且将你所有的数据存储到一个索引中。
+在这个索引中，你可以为用户数据定义一个类型，为博客数据定义另一个类型，当然，也可以为评论数据定义另一个类型。
+
+字段Field
+相当于是数据表的字段，对文档数据根据不同属性进行的分类标识
+
+映射 mapping
+mapping是处理数据的方式和规则方面做一些限制，如某个字段的数据类型、默认值、分析器、是否被索引等等，
+这些都是映射里面可以设置的，其它就是处理es里面数据的一些使用规则设置也叫做映射，按着最优规则处理数据对性能提高很大，
+因此才需要建立映射，并且需要思考如何建立映射才能对性能更好。（相对于关系数据库中的表结构的定义）
+
+文档 document
+一个文档是一个可被索引的基础信息单元。比如，你可以拥有某一个客户的文档，某一个产品的一个文档，当然，也可以拥有某个订单的一个文档。
+文档以JSON（Javascript Object Notation）格式来表示，而JSON是一个到处存在的互联网数据交互格式。
+在一个index/type里面，你可以存储任意多的文档。注意，尽管一个文档，物理上存在于一个索引之中，文档必须被索引/赋予一个索引的type。
+
+接近实时 NRT
+Elasticsearch是一个接近实时的搜索平台。这意味着，从索引一个文档直到这个文档能够被搜索到有一个轻微的延迟（通常是1秒以内）
+
+集群 cluster
+一个集群就是由一个或多个节点组织在一起，它们共同持有整个的数据，并一起提供索引和搜索功能。
+一个集群由一个唯一的名字标识，这个名字默认就是“elasticsearch”。这个名字是重要的，因为一个节点只能通过指定某个集群的名字，来加入这个集群。
+
+节点 node
+一个节点是集群中的一个服务器，作为集群的一部分，它存储数据，参与集群的索引和搜索功能。
+和集群类似，一个节点也是由一个名字来标识的，默认情况下，这个名字是一个随机的漫威漫画角色的名字，这个名字会在启动的时候赋予节点。
+这个名字对于管理工作来说挺重要的，因为在这个管理过程中，你会去确定网络中的哪些服务器对应于Elasticsearch集群中的哪些节点。
+一个节点可以通过配置集群名称的方式来加入一个指定的集群。默认情况下，每个节点都会被安排加入到一个叫做“elasticsearch”的集群中，
+这意味着，如果你在你的网络中启动了若干个节点，并假定它们能够相互发现彼此，它们将会自动地形成并加入到一个叫做“elasticsearch”的集群中。
+在一个集群里，只要你想，可以拥有任意多个节点。而且，如果当前你的网络中没有运行任何Elasticsearch节点，这时启动一个节点，会默认创建并加入一个叫做“elasticsearch”的集群。
+
+分片和复制 shards&replicas
+一个索引可以存储超出单个结点硬件限制的大量数据。比如，一个具有10亿文档的索引占据1TB的磁盘空间，而任一节点都没有这样大的磁盘空间；
+或者单个节点处理搜索请求，响应太慢。为了解决这个问题，Elasticsearch提供了将索引划分成多份的能力，这些份就叫做分片。
+当你创建一个索引的时候，你可以指定你想要的分片的数量。每个分片本身也是一个功能完善并且独立的“索引”，这个“索引”可以被放置到集群中的任何节点上。
+分片很重要，主要有两方面的原因： 
+1）允许你水平分割/扩展你的内容容量。 
+2）允许你在分片（潜在地，位于多个节点上）之上进行分布式的、并行的操作，进而提高性能/吞吐量。
+至于一个分片怎样分布，它的文档怎样聚合回搜索请求，是完全由Elasticsearch管理的，对于作为用户的你来说，这些都是透明的。
+在一个网络/云的环境里，失败随时都可能发生，在某个分片/节点不知怎么的就处于离线状态，或者由于任何原因消失了，这种情况下，有一个故障转移机制是非常有用并且是强烈推荐的。
+为此目的，Elasticsearch允许你创建分片的一份或多份拷贝，这些拷贝叫做复制分片，或者直接叫复制。
+复制之所以重要，有两个主要原因： 在分片/节点失败的情况下，提供了高可用性。因为这个原因，注意到复制分片从不与原/主要（original/primary）分片置于同一节点上是非常重要的。
+扩展你的搜索量/吞吐量，因为搜索可以在所有的复制上并行运行。总之，每个索引可以被分成多个分片。一个索引也可以被复制0次（意思是没有复制）或多次。
+一旦复制了，每个索引就有了主分片（作为复制源的原来的分片）和复制分片（主分片的拷贝）之别。分片和复制的数量可以在索引创建的时候指定。
+在索引创建之后，你可以在任何时候动态地改变复制的数量，但是你事后不能改变分片的数量。
+默认情况下，Elasticsearch中的每个索引被分片5个主分片和1个复制，这意味着，如果你的集群中至少有两个节点，
+你的索引将会有5个主分片和另外5个复制分片（1个完全拷贝），这样的话每个索引总共就有10个分片。
+
+
+使用Postman工具进行Restful接口访问
+
+ElasticSearch的接口语法
+	curl -X<VERB> '<PROTOCOL>://<HOST>:<PORT>/<PATH>?<QUERY_STRING>' -d '<BODY>'
+其中：
+| 参数           | 解释                                       |
+| -------------- | ---------------------------------------- |
+| `VERB`         | 适当的 HTTP *方法* 或 *谓词* : `GET`、 `POST`、 `PUT`、 `HEAD` 或者 `DELETE`。 |
+| `PROTOCOL`     | `http` 或者 `https`（如果你在 Elasticsearch 前面有一个 `https` 代理） |
+| `HOST`         | Elasticsearch 集群中任意节点的主机名，或者用 `localhost` 代表本地机器上的节点。 |
+| `PORT`         | 运行 Elasticsearch HTTP 服务的端口号，默认是 `9200` 。 |
+| `PATH`         | API 的终端路径（例如 `_count` 将返回集群中文档数量）。Path 可能包含多个组件，例如：`_cluster/stats` 和 `_nodes/stats/jvm` 。 |
+| `QUERY_STRING` | 任意可选的查询字符串参数 (例如 `?pretty` 将格式化地输出 JSON 返回值，使其更容易阅读) |
+| `BODY`         | 一个 JSON 格式的请求体 (如果请求需要的话)                |
+
+创建索引index和映射mapping
+使用 PUT 命令
+PUT		localhost:9200/blog1
+请求体：
+{
+    "mappings": {
+        "article": {
+            "properties": {
+                "id": {
+                	"type": "long",
+                    "store": true,
+                    "index":"not_analyzed"
+                },
+                "title": {
+                	"type": "text",
+                    "store": true,
+                    "index":"analyzed",
+                    "analyzer":"standard"
+                },
+                "content": {
+                	"type": "text",
+                    "store": true,
+                    "index":"analyzed",
+                    "analyzer":"standard"
+                }
+            }
+        }
+    }
+}
+
+给已创建的index添加mapping
+使用 POST 命令，给 hello 这个type添加 mapping
+POST http://127.0.0.1:9200/blog/hello/_mappings
+请求体为：
+{
+    "hello": {
+        "properties": {
+            "id": {
+            	"type": "long",
+                "store": true,
+                "index":"not_analyzed"
+            },
+            "title": {
+            	"type": "text",
+                "store": true,
+                "index":"analyzed",
+                "analyzer":"standard"
+            },
+            "content": {
+            	"type": "text",
+                "store": true,
+                "index":"analyzed",
+                "analyzer":"standard"
+            }
+        }
+    }
+}
+
+删除索引index
+DELETE	localhost:9200/blog1
+
+添加文档
+POST	localhost:9200/blog1/article/1
+请全体
+{
+	"id":1,
+	"title":"ElasticSearch是一个基于Lucene的搜索服务器",
+	"content":"它提供了一个分布式多用户能力的全文搜索引擎，基于RESTful web接口。Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码发布，是当前流行的企业级搜索引擎。设计用于云计算中，能够达到实时搜索，稳定，可靠，快速，安装使用方便。"
+}
+路径中最后的1指定了生成的文档的真正的_id，如果未设置，则es自动生成一个uuid
+请全体中的id是我们数据中的一个字段
+
+修改文档
+POST	localhost:9200/blog1/article/1
+请求体
+{
+	"id":1,
+	"title":"【修改】ElasticSearch是一个基于Lucene的搜索服务器",
+	"content":"【修改】它提供了一个分布式多用户能力的全文搜索引擎，基于RESTful web接口。Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码发布，是当前流行的企业级搜索引擎。设计用于云计算中，能够达到实时搜索，稳定，可靠，快速，安装使用方便。"
+}
+
+删除文档document
+DELETE	localhost:9200/blog1/article/1
+
+
+查询文档
+
+根据id查询
+GET	localhost:9200/blog1/article/1
+
+term查询（关键词查询）
+POST	localhost:9200/blog1/article/_search
+{
+    "query": {
+        "term": {
+            "title": "搜索"
+        }
+    }
+}
+因为分词的时候使用的是标准分析器，标准分析器是基于单个汉字进行分词的，
+因此关键词为多个汉字的词语进行查询的时候没有结果，如果使用单个汉字作为查询条件可以查到结果
+
+querystring查询
+POST	localhost:9200/blog1/article/_search
+请全体
+{
+    "query": {
+        "query_string": {
+            "default_field": "title",
+            "query": "搜索服务器"
+        }
+    }
+}
+会先根据字符串进行分词，将得到的所有关键词进行查询
+标准分词器分词效果测试：
+http://127.0.0.1:9200/_analyze?analyzer=standard&pretty=true&text=我是程序员
+
+
+IK 分词器和ElasticSearch集成使用
+由于上述标准分词器对汉字是按单个汉字作为term进行查询的，为了提高检索效率，我们可以使用IK分词器
+
+安装方法：
+先下载 elasticsearch-analysis-ik-5.6.8
+然后将解压后的文件放入 elasticsearch-5.6.8\plugins
+
+IKAnalyzer是一个开源的，基于java语言开发的轻量级的中文分词工具包。从2006年12月推出1.0版开始，IKAnalyzer已经推出 了3个大版本。
+最初，它是以开源项目Lucene为应用主体的，结合词典分词和文法分析算法的中文分词组件。
+新版本的IKAnalyzer3.0则发展为 面向Java的公用分词组件，独立于Lucene项目，同时提供了对Lucene的默认优化实现。
+
+IK分词器3.0的特性如下：
+1）采用了特有的“正向迭代最细粒度切分算法“，具有60万字/秒的高速处理能力。
+2）采用了多子处理器分析模式，支持：英文字母（IP地址、Email、URL）、数字（日期，常用中文数量词，罗马数字，科学计数法），中文词汇（姓名、地名处理）等分词处理。
+3）对中英联合支持不是很好,在这方面的处理比较麻烦.需再做一次查询,同时是支持个人词条的优化的词典存储，更小的内存占用。
+4）支持用户词典扩展定义。
+5）针对Lucene全文检索优化的查询分析器IKQueryParser；采用歧义分析算法优化查询关键字的搜索排列组合，能极大的提高Lucene检索的命中率。
+
+IK提供了两个分词算法ik_smart 和 ik_max_word
+其中 ik_smart 为最少切分，ik_max_word为最细粒度划分
+测试一下两种分词算法
+http://127.0.0.1:9200/_analyze?analyzer=ik_smart&pretty=true&text=我是程序员
+http://127.0.0.1:9200/_analyze?analyzer=ik_max_word&pretty=true&text=我是程序员
+
+重建索引，在mappings中指定ik分词器
+put http://127.0.0.1:9200/blog
+请全体
+{
+    "mappings": {
+        "article": {
+            "properties": {
+                "id": {
+                	"type": "long",
+                    "store": true,
+                    "index":"not_analyzed"
+                },
+                "title": {
+                	"type": "text",
+                    "store": true,
+                    "index":"analyzed",
+                    "analyzer":"ik_max_word"
+                },
+                "content": {
+                	"type": "text",
+                    "store": true,
+                    "index":"analyzed",
+                    "analyzer":"ik_max_word"
+                }
+            }
+        }
+    }
+}
+
+重建索引，在mappings中指定ik分词器，并创建文档
+POST	localhost:9200/blog/article/1
+请全体
+{
+	"id":1,
+	"title":"ElasticSearch是一个基于Lucene的搜索服务器",
+	"content":"它提供了一个分布式多用户能力的全文搜索引擎，基于RESTful web接口。Elasticsearch是用Java开发的，并作为Apache许可条款下的开放源码发布，是当前流行的企业级搜索引擎。设计用于云计算中，能够达到实时搜索，稳定，可靠，快速，安装使用方便。"
+}
+
+然后我们就可以使用多个汉字的词语作为关键字进行查询
+post http://localhost:9200/blog/_search
+{
+	"query":{
+		"term":{
+			"title":"发什么"
+		}
+	}
+}
+
+
+ElasticSearch集群
+ES集群是一个 P2P类型(使用 gossip 协议)的分布式系统，除了集群状态管理以外，其他所有的请求都可以发送到集群内任意一台节点上，
+这个节点可以自己找到需要转发给哪些节点，并且直接跟这些节点通信。所以，从网络架构及服务配置上来说，构建集群所需要的配置极其简单。
+在 Elasticsearch 2.0 之前，无阻碍的网络下，所有配置了相同 cluster.name 的节点都自动归属到一个集群中。
+2.0 版本之后，基于安全的考虑避免开发环境过于随便造成的麻烦，从 2.0 版本开始，默认的自动发现方式改为了单播(unicast)方式。
+配置里提供几台节点的地址，ES 将其视作 gossip router 角色，借以完成集群的发现。由于这只是 ES 内一个很小的功能，所以 gossip router 角色并不需要单独配置，每个 ES 节点都可以担任。
+所以，采用单播方式的集群，各节点都配置相同的几个节点列表作为 router 即可。
+​集群中节点数量没有限制，一般大于等于2个节点就可以看做是集群了。一般处于高性能及高可用方面来考虑一般集群中的节点数量都是3个及3个以上。
+
+集群 cluster
+一个集群就是由一个或多个节点组织在一起，它们共同持有整个的数据，并一起提供索引和搜索功能。
+一个集群由一个唯一的名字标识，这个名字默认就是“elasticsearch”。一个节点只能通过指定某个集群的名字，来加入这个集群。
+
+节点 node
+一个节点是集群中的一个服务器，作为集群的一部分，它存储数据，参与集群的索引和搜索功能。和集群类似，一个节点也是由一个名字来标识的，
+默认情况下，这个名字是一个随机的漫威漫画角色的名字，这个名字会在启动的时候赋予节点。这个名字对于管理工作来说挺重要的，
+因为在这个管理过程中，你会去确定网络中的哪些服务器对应于Elasticsearch集群中的哪些节点。
+一个节点可以通过配置集群名称的方式来加入一个指定的集群。默认情况下，每个节点都会被安排加入到一个叫做“elasticsearch”的集群中，
+这意味着，如果你在你的网络中启动了若干个节点，并假定它们能够相互发现彼此，它们将会自动地形成并加入到一个叫做“elasticsearch”的集群中。
+在一个集群里，可以拥有任意多个节点。而且，如果当前你的网络中没有运行任何Elasticsearch节点，这时启动一个节点，会默认创建并加入一个叫做“elasticsearch”的集群。
+
+分片和复制 shards&replicas
+一个索引可以存储超出单个结点硬件限制的大量数据。比如，一个具有10亿文档的索引占据1TB的磁盘空间，而任一节点都没有这样大的磁盘空间；或者单个节点处理搜索请求，响应太慢。
+为了解决这个问题，Elasticsearch提供了将索引划分成多份的能力，这些份就叫做分片。当你创建一个索引的时候，你可以指定你想要的分片的数量。
+每个分片本身也是一个功能完善并且独立的“索引”，这个“索引”可以被放置到集群中的任何节点上。
+分片很重要，主要有两方面的原因： 
+1）允许你水平分割/扩展你的内容容量。 
+2）允许你在分片（潜在地，位于多个节点上）之上进行分布式的、并行的操作，进而提高性能/吞吐量。
+
+至于一个分片怎样分布，它的文档怎样聚合回搜索请求，是完全由Elasticsearch管理的，对于作为用户的你来说，这些都是透明的。
+在一个网络/云的环境里，失败随时都可能发生，在某个分片/节点不知怎么的就处于离线状态，或者由于任何原因消失了，
+这种情况下，有一个故障转移机制是非常有用并且是强烈推荐的。为此目的，Elasticsearch允许你创建分片的一份或多份拷贝，这些拷贝叫做复制分片，或者直接叫复制。
+
+复制之所以重要，有两个主要原因： 
+1）在分片/节点失败的情况下，提供了高可用性。因为这个原因，注意到复制分片从不与原/主要（original/primary）分片置于同一节点上。
+2）扩展你的搜索量/吞吐量，因为搜索可以在所有的复制上并行运行。
+总之，每个索引可以被分成多个分片。一个索引也可以被复制0次（意思是没有复制）或多次。一旦复制了，每个索引就有了主分片（作为复制源的原来的分片）和复制分片（主分片的拷贝）之别。
+分片和复制的数量可以在索引创建的时候指定。在索引创建之后，你可以在任何时候动态地改变复制的数量，但是你事后不能改变分片的数量。
+
+默认情况下，Elasticsearch中的每个索引被分片5个主分片和1个复制，这意味着，如果你的集群中至少有两个节点，
+你的索引将会有5个主分片和另外5个复制分片（1个完全拷贝），这样的话每个索引总共就有10个分片。
+
+创建集群
+准备三台elasticsearch服务器，创建elasticsearch-5.6.8-cluster文件夹，在内部复制三个elasticsearch服务，改名为es-cluster-node*
+修改每台服务器配置
+修改elasticsearch-5.6.8-cluster\es-cluster-node01\config\elasticsearch.yml配置文件
+
+node1节点：
+#节点1的配置信息：
+#集群名称，保证唯一
+cluster.name: my-elasticsearch
+#节点名称，必须不一样
+node.name: node-01
+#必须为本机的ip地址
+network.host: 127.0.0.1
+#服务端口号，在同一机器下必须不一样
+http.port: 9200
+#集群间通信端口号，在同一机器下必须不一样
+transport.tcp.port: 9300
+#设置集群自动发现机器ip集合
+discovery.zen.ping.unicast.hosts: ["127.0.0.1:9300","127.0.0.1:9301","127.0.0.1:9302"]
+
+node2节点：
+#节点2的配置信息：
+#集群名称，保证唯一
+cluster.name: my-elasticsearch
+#节点名称，必须不一样
+node.name: node-02
+#必须为本机的ip地址
+network.host: 127.0.0.1
+#服务端口号，在同一机器下必须不一样
+http.port: 9201
+#集群间通信端口号，在同一机器下必须不一样
+transport.tcp.port: 9301
+#设置集群自动发现机器ip集合
+discovery.zen.ping.unicast.hosts: ["127.0.0.1:9300","127.0.0.1:9301","127.0.0.1:9302"]
+
+node3节点：
+#节点3的配置信息：
+#集群名称，保证唯一
+cluster.name: my-elasticsearch
+#节点名称，必须不一样
+node.name: node-03
+#必须为本机的ip地址
+network.host: 127.0.0.1
+#服务端口号，在同一机器下必须不一样
+http.port: 9202
+#集群间通信端口号，在同一机器下必须不一样
+transport.tcp.port: 9302
+#设置集群自动发现机器ip集合
+discovery.zen.ping.unicast.hosts: ["127.0.0.1:9300","127.0.0.1:9301","127.0.0.1:9302"]
+
+
+使用java操作ElasticSearch
+
+导入依赖
+<dependencies>
+	<dependency>
+		<groupId>org.elasticsearch</groupId>
+		<artifactId>elasticsearch</artifactId>
+		<version>5.6.8</version>
+	</dependency>
+	<dependency>
+		<groupId>org.elasticsearch.client</groupId>
+		<artifactId>transport</artifactId>
+		<version>5.6.8</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.logging.log4j</groupId>
+		<artifactId>log4j-to-slf4j</artifactId>
+		<version>2.9.1</version>
+	</dependency>
+	<dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-api</artifactId>
+		<version>1.7.24</version>
+	</dependency>
+	<dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-simple</artifactId>
+		<version>1.7.21</version>
+	</dependency>
+	<dependency>
+		<groupId>log4j</groupId>
+		<artifactId>log4j</artifactId>
+		<version>1.2.12</version>
+	</dependency>
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.12</version>
+	</dependency>
+</dependencies>
+
+创建索引库
+@Test
+public void createIndex() throws Exception {
+	//1、创建一个Settings对象，相当于是一个配置信息。主要配置集群的名称。
+	Settings settings = Settings.builder().put("cluster.name", "my-elasticsearch").build();
+	//2、创建一个客户端Client对象
+	TransportClient client = new PreBuiltTransportClient(settings);
+	client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"), 9300));
+	client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"), 9301));
+	client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"), 9302));
+	//3、使用client对象创建一个索引库
+	// get() 才会执行创建的操作
+	client.admin().indices().prepareCreate("index_hello").get();
+	//4、关闭client对象
+	client.close();
+}
+
+添加映射信息
+@Test
+public void setMappings() throws Exception{
+	Settings settings = Settings.builder().put("cluster.name","my-elasticsearch").build();
+	TransportClient client = new PreBuiltTransportClient(settings);
+	client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"),9300));
+	client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"),9301));
+	client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"),9302));
+	//创建一个Mappings信息
+	/*{
+		"article":{
+		"properties":{
+			"id":{
+				"type":"long",
+						"store":true
+			},
+			"title":{
+				"type":"text",
+						"store":true,
+						"index":true,
+						"analyzer":"ik_smart"
+			},
+			"content":{
+				"type":"text",
+						"store":true,
+						"index":true,
+						"analyzer":"ik_smart"
+			}
+		}
+	}
+	}*/
+
+	// 使用 XContentBuilder 描述json数据
+	XContentBuilder builder = XContentFactory.jsonBuilder()
+		.startObject()
+			.startObject("article")
+				.startObject("properties")
+					.startObject("id")
+						.field("type","long")
+						.field("store", true)
+					.endObject()
+					.startObject("title")
+						.field("type", "text")
+						.field("store", true)
+						.field("analyzer", "ik_smart")
+					.endObject()
+					.startObject("content")
+						.field("type", "text")
+						.field("store", true)
+						.field("analyzer","ik_smart")
+					.endObject()
+				.endObject()
+			.endObject()
+		.endObject();
+
+	//使用client把mapping信息设置到索引库中
+	client.admin().indices()
+			//设置要做映射的索引
+			.preparePutMapping("index_hello")
+			//设置要做映射的type
+			.setType("article")
+			//mapping信息，可以是XContentBuilder对象可以是json格式的字符串
+			.setSource(builder)
+			//执行操作
+			.get();
+	//关闭链接
+	client.close();
+}
+
+把创建client的步骤抽取出来
+private TransportClient client;
+@Before
+public void init() throws Exception {
+	//创建一个Settings对象
+	Settings settings = Settings.builder()
+			.put("cluster.name", "my-elasticsearch")
+			.build();
+	//创建一个TransPortClient对象
+	client = new PreBuiltTransportClient(settings)
+			.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"), 9300))
+			.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"), 9301))
+			.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"), 9302));
+}
+
+添加文档
+@Test
+public void testAddDocument() throws Exception {
+	//创建一个client对象
+	//创建一个文档对象
+	XContentBuilder builder = XContentFactory.jsonBuilder()
+			.startObject()
+			.field("id", 2l)
+			.field("title", "北方入秋速度明显加快 多地降温幅度最多可达10度22222")
+			.field("content", "阿联酋一架客机在纽约机场被隔离 10名乘客病倒")
+			.endObject();
+	//把文档对象添加到索引库
+	client.prepareIndex()
+			//设置索引名称
+			.setIndex("index_hello")
+			//设置type
+			.setType("article")
+			//设置文档的id，如果不设置的话自动的生成一个id
+			.setId("2")
+			//设置文档信息
+			.setSource(builder)
+			//执行操作
+			.get();
+	//关闭客户端
+	client.close();
+}
+
+// 使用 jackson 将 POJO类转为json，添加文档
+@Test
+public void testAddDocument2() throws Exception {
+	//创建一个Article对象
+	Article article = new Article();
+	//设置对象的属性
+	article.setId(3l);
+	article.setTitle("MH370坠毁在柬埔寨密林?中国一公司调十颗卫星去拍摄");
+	article.setContent("警惕荒唐的死亡游戏!俄15岁少年输掉游戏后用电锯自杀");
+	//把article对象转换成json格式的字符串。
+	ObjectMapper objectMapper = new ObjectMapper();
+	String jsonDocument = objectMapper.writeValueAsString(article);
+	System.out.println(jsonDocument);
+	//使用client对象把文档写入索引库
+	client.prepareIndex("index_hello","article", "3")
+			.setSource(jsonDocument, XContentType.JSON)
+			.get();
+	//关闭客户端
+	client.close();
+}
+
+
+查询索引
+
+根据id查询
+public void testSearchById() throws Exception {
+	//创建一个client对象
+	//创建一个查询对象
+	QueryBuilder queryBuilder = QueryBuilders.idsQuery().addIds("1", "2");
+	//执行查询
+	SearchResponse searchResponse = client.prepareSearch("index_hello")
+			.setTypes("article")
+			.setQuery(queryBuilder)
+			.get();
+	//取查询结果
+	SearchHits searchHits = searchResponse.getHits();
+	//取查询结果的总记录数
+	System.out.println("查询结果总记录数：" + searchHits.getTotalHits());
+	//查询结果列表
+	Iterator<SearchHit> iterator = searchHits.iterator();
+	while (iterator.hasNext()){
+		SearchHit searchHit = iterator.next();
+		System.out.println(searchHit.getSourceAsString());
+		//取文档的属性
+		System.out.println("-----------文档的属性");
+		Map<String, Object> document = searchHit.getSource();
+		System.out.println(document.get("id"));
+		System.out.println(document.get("title"));
+		System.out.println(document.get("content"));
+	}
+	//关闭client
+	client.close();
+}
+
+
+将查询过程封装为一个方法
+private void search(QueryBuilder queryBuilder) throws Exception {
+	//执行查询
+	SearchResponse searchResponse = client.prepareSearch("index_hello")
+			.setTypes("article")
+			.setQuery(queryBuilder)
+			.get();
+	//取查询结果
+	SearchHits searchHits = searchResponse.getHits();
+	//取查询结果的总记录数
+	System.out.println("查询结果总记录数：" + searchHits.getTotalHits());
+	//查询结果列表
+	Iterator<SearchHit> iterator = searchHits.iterator();
+	while (iterator.hasNext()){
+		SearchHit searchHit = iterator.next();
+		System.out.println(searchHit.getSourceAsString());
+		//取文档的属性
+		System.out.println("-----------文档的属性");
+		Map<String, Object> document = searchHit.getSource();
+		System.out.println(document.get("id"));
+		System.out.println(document.get("title"));
+		System.out.println(document.get("content"));
+	}
+	//关闭client
+	client.close();
+}
+
+根据term查询
+public void testQueryByTerm() throws Exception {
+	//创建一个QueryBuilder对象
+	//参数1：要搜索的字段
+	//参数2：要搜索的关键词
+	QueryBuilder queryBuilder = QueryBuilders.termQuery("title", "北方");
+	search(queryBuilder);
+}
+
+根据queryString查询
+public void testQueryStringQuery() throws Exception {
+	//创建一个QueryBuilder对象
+	QueryBuilder queryBuilder = QueryBuilders.queryStringQuery("速度与激情")
+			.defaultField("title");
+	search(queryBuilder);
+}
+
+对查询结果中的某个字段高亮显示
+/**
+ * 查询并高亮显示某个字段
+ * @param queryBuilder
+ * @param highlightField
+ * @throws Exception
+ */
+private void search(QueryBuilder queryBuilder, String highlightField) throws Exception {
+	HighlightBuilder highlightBuilder = new HighlightBuilder();
+	//高亮显示的字段
+	highlightBuilder.field(highlightField);
+	highlightBuilder.preTags("<em>");
+	highlightBuilder.postTags("</em>");
+	//执行查询
+	SearchResponse searchResponse = client.prepareSearch("index_hello")
+			.setTypes("article")
+			.setQuery(queryBuilder)
+			//设置分页信息
+			.setFrom(0)
+			//每页显示的行数
+			.setSize(5)
+			//设置高亮信息
+			.highlighter(highlightBuilder)
+			.get();
+	//取查询结果
+	SearchHits searchHits = searchResponse.getHits();
+	//取查询结果的总记录数
+	System.out.println("查询结果总记录数：" + searchHits.getTotalHits());
+	//查询结果列表
+	Iterator<SearchHit> iterator = searchHits.iterator();
+	while(iterator.hasNext()) {
+		SearchHit searchHit = iterator.next();
+		//打印文档对象，以json格式输出
+		System.out.println(searchHit.getSourceAsString());
+		//取文档的属性
+		System.out.println("-----------文档的属性");
+		Map<String, Object> document = searchHit.getSource();
+		System.out.println(document.get("id"));
+		System.out.println(document.get("title"));
+		System.out.println(document.get("content"));
+		System.out.println("************高亮结果");
+		Map<String, HighlightField> highlightFields = searchHit.getHighlightFields();
+		System.out.println(highlightFields);
+		//取title高亮显示的结果
+		HighlightField field = highlightFields.get(highlightField);
+		Text[] fragments = field.getFragments();
+		if (fragments != null) {
+			String title = fragments[0].toString();
+			System.out.println(title);
+		}
+
+	}
+	//关闭client
+	client.close();
+}
+
+
+Spring Data ElasticSearch 使用
+Spring Data是一个用于简化数据库访问，并支持云服务的开源框架。其主要目标是使得对数据的访问变得方便快捷，并支持map-reduce框架和云计算数据服务。 
+Spring Data可以极大的简化JPA的写法，可以在几乎不用写实现的情况下，实现对数据的访问和操作。除了CRUD外，还包括如分页、排序等一些常用的功能。
+
+Spring Data ElasticSearch 基于 spring data API 简化 elasticSearch操作，将原始操作elasticSearch的客户端API 进行封装 。
+Spring Data为Elasticsearch项目提供集成搜索引擎。Spring Data Elasticsearch POJO的关键功能区域为中心的模型与Elastichsearch交互文档和轻松地编写一个存储库数据访问层。
+
+配置spring配置文件
+<!--elastic客户对象的配置-->
+<elasticsearch:transport-client id="esClient" cluster-name="my-elasticsearch"
+								cluster-nodes="127.0.0.1:9300,127.0.0.1:9301,127.0.0.1:9302"/>
+<!--配置包扫描器,扫描dao的接口-->
+<elasticsearch:repositories base-package="cn.figo.es.repositories"/>
+<!---->
+<bean id="elasticsearchTemplate" class="org.springframework.data.elasticsearch.core.ElasticsearchTemplate">
+	<constructor-arg name="client" ref="esClient"/>
+</bean>
+
+Article实体类中的注解
+@Document(indexName = "sdes_blog", type = "article")
+public class Article {
+    @Id
+    @Field(type = FieldType.Long, store = true)
+    private long id;
+    @Field(type = FieldType.text, store = true, analyzer = "ik_smart")
+    private String title;
+    @Field(type = FieldType.text, store = true, analyzer = "ik_smart")
+    private String content;
+}
+
+解释
+@Document(indexName="blob3",type="article")：
+    indexName：索引的名称（必填项）
+    type：索引的类型
+@Id：主键的唯一标识
+@Field(index=true,analyzer="ik_smart",store=true,searchAnalyzer="ik_smart",type = FieldType.text)
+    index：是否设置分词
+    analyzer：存储时使用的分词器
+    searchAnalyze：搜索时使用的分词器
+    store：是否存储
+    type: 数据类型
+
+持久化类
+public interface ArticleRepository extends ElasticsearchRepository<Article, Long> {
+}
+
+测试一创建索引
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:applicationContext.xml")
+public class SpringDataElasticSearchTest {
+
+    @Autowired
+    private ArticleRepository articleRepository;
+    @Autowired
+    private ElasticsearchTemplate template;
+
+    @Test
+    public void createIndex() throws Exception {
+        //创建索引，并配置映射关系
+        template.createIndex(Article.class);
+        //配置映射关系
+        //template.putMapping(Article.class);
+    }
+}
+
+保存文档
+@Test
+public void saveArticle(){
+	Article article = new Article();
+	article.setId(100);
+	article.setTitle("测试SpringData ElasticSearch");
+	article.setContent("Spring Data ElasticSearch 基于 spring data API 简化 elasticSearch操作，将原始操作elasticSearch的客户端API 进行封装 \n" +
+			"    Spring Data为Elasticsearch Elasticsearch项目提供集成搜索引擎");
+
+	articleRepository.save(article);
+}
+
+删除
+@Test
+public void deleteDocumentById() throws Exception{
+	articleRepository.deleteById(100l);
+}
+
+查询所有
+@Test
+public void findAll() throws Exception{
+	Iterable<Article> articles = articleRepository.findAll();
+	articles.forEach(article -> System.out.println(article));
+}
+
+根据id查询
+@Test
+public void findById() throws Exception{
+	Optional<Article> optional = articleRepository.findById(1l);
+	Article article = optional.get();
+	System.out.println(article);
+}
+
+常用查询命名规则
+| 关键字           | 命名规则                  | 解释                  | 示例                    |
+| ------------- | --------------------- | ------------------- | --------------------- |
+| and           | findByField1AndField2 | 根据Field1和Field2获得数据 | findByTitleAndContent |
+| or            | findByField1OrField2  | 根据Field1或Field2获得数据 | findByTitleOrContent  |
+| is            | findByField           | 根据Field获得数据         | findByTitle           |
+| not           | findByFieldNot        | 根据Field获得补集数据       | findByTitleNot        |
+| between       | findByFieldBetween    | 获得指定范围的数据           | findByPriceBetween    |
+| lessThanEqual | findByFieldLessThan   | 获得小于等于指定值的数据        | findByPriceLessThan   |
+
+public interface ArticleRepository extends ElasticsearchRepository<Article, Long> {
+    // 根据springDataES的命名规则编写，则不需要写具体实现
+    List<Article> findByTitle(String title);
+    List<Article> findByTitleOrContent(String title, String content);
+    List<Article> findByTitleOrContent(String title, String content, Pageable pageable);
+}
+
+@Test
+public void findByTitle() throws Exception{
+	List<Article> articles = articleRepository.findByTitle("title 3");
+	articles.stream().forEach(article -> System.out.println(article));
+}
+
+@Test
+public void findByTitleOrContent() throws Exception{
+	// 默认分页10条数据
+	List<Article> articles = articleRepository.findByTitleOrContent("title", "content 5");
+	articles.stream().forEach(article -> System.out.println(article));
+}
+
+@Test
+public void findByTitleOrContentPageable() throws Exception{
+	// 设置分页信息从第0页开始
+	Pageable pageable = PageRequest.of(0,15);
+	// 自带的查询也是先分词再查询，但多个分词之间是and关系，也就是说多个分词需要出现在一句话中，
+	// 某一个分词出现在这句话中时，查询结果中并没有这句话，这并不是 QueryString
+	List<Article> articles = articleRepository.findByTitleOrContent("数据库服务器", "content 5",pageable);
+	articles.stream().forEach(article -> System.out.println(article));
+}
+
+// 使用Elasticsearch的原生查询对象进行查询
+@Test
+public void findByNativeQuery() {
+	//创建一个SearchQuery对象
+	NativeSearchQuery query = new NativeSearchQueryBuilder()
+			//设置查询条件，此处可以使用QueryBuilders创建多种查询
+			.withQuery(QueryBuilders.queryStringQuery("数据库服务器").defaultField("title"))
+			//还可以设置分页信息
+			.withPageable(PageRequest.of(1, 5))
+			//创建SearchQuery对象
+			.build();
+
+	//使用模板对象执行查询
+	List<Article> articleList = template.queryForList(query, Article.class);
+	articleList.forEach(article -> System.out.println(article));
+}
+
+
+git
+
+Git是分布式版本控制系统，那么它就没有中央服务器的，每个人的电脑就是一个完整的版本库，这样，工作的时候就不需要联网了，因为版本都是在自己的电脑上。
+既然每个人的电脑都有一个完整的版本库，那多个人如何协作呢？比如说自己在电脑上改了文件A，其他人也在电脑上改了文件A，
+这时，你们两之间只需把各自的修改推送给对方，就可以互相看到对方的修改了。
+下图就是分布式版本控制工具管理方式：
+
+Git 的工作流程：
+1．从远程仓库中克隆 Git 资源作为本地仓库。
+2．从本地仓库中checkout代码然后进行代码修改
+3．在提交前先将代码提交到暂存区。
+4．提交修改。提交到本地仓库。本地仓库中保存修改的各个历史版本。
+5．在修改完成后，需要和团队成员共享代码时，可以将代码push到远程仓库。
+
+
+什么是工作区（Working Directory）？
+工作区就是工作目录，在这个目录中有“.git”隐藏文件夹，其他文件夹中就是所写的代码。
+
+什么是版本库呢？版本库又名仓库，英文名repository，你可以简单理解成一个目录，
+这个目录里面的所有文件都可以被Git管理起来，每个文件的修改、删除，Git都能跟踪，
+以便任何时刻都可以追踪历史，或者在将来某个时刻可以“还原”。由于git是分布式版本管理工具，
+所以git在不需要联网的情况下也具有完整的版本管理能力。
+
+版本库：“.git”目录就是版本库，将来文件都需要保存到版本库中。
+工作目录：包含“.git”目录的目录，也就是.git目录的上一级目录就是工作目录。只有工作目录中的文件才能保存到版本库中。
+
+Git和其他版本控制系统如SVN的一个不同之处就是有暂存区的概念。
+Git的版本库里存了很多东西，其中最重要的就是称为stage（或者叫index）的暂存区，
+还有Git为我们自动创建的第一个分支master，以及指向master的一个指针叫HEAD。
+我们把文件往Git版本库里添加的时候，是分两步执行的：
+	第一步是用git add把文件添加进去，实际上就是把文件修改添加到暂存区；
+	第二步是用git commit提交更改，实际上就是把暂存区的所有内容提交到当前分支。
+可以简单理解为，需要提交的文件修改通通放到暂存区，然后，一次性提交暂存区的所有修改。
+
+
+一：下载、安装、连接
+1、安装：
+	sudo apt-get install git git-gui
+2、检查ssh连接：
+	ssh -T git@github.com
+	出现：The authenticity of host 'http://github.com (13.250.177.223)' can't be established.
+	RSA key fingerprint is SHA256:nThdjfalsj5656adfsa.
+	Are you sure you want to continue connecting (yes/no)? yes
+	Warning: Permanently added 'github.com,13.250.177.223' (RSA) to the list of known hosts.
+3、说明ssh可以连接，接下来看一下是否有key：
+	cd ~/.ssh
+	ls
+	显示：
+	figo@figo-Linux:~$ cd ~/.ssh
+	figo@figo-Linux:~/.ssh$ ls
+	known_hosts
+4、发现并没有id_rsa（私钥）和id_rsa.pub（公钥）这两个文件：
+输入：ssh-keygen -t rsa -C "你自己的github的注册邮箱地址"
+控制台输出：
+	figo@figo-Linux:~/.ssh$ ssh-keygen -t rsa -C "你自己的github的注册邮箱地址"
+	Generating public/private rsa key pair.
+	Enter file in which to save the key (/home/figo/.ssh/id_rsa):
+	Enter passphrase (empty for no passphrase):
+	Enter same passphrase again:
+	Your identification has been saved in /home/figo/.ssh/id_rsa.
+	Your public key has been saved in /home/figo/.ssh/id_rsa.pub.
+	The key fingerprint is:
+	SHA256:6ZBNhDYJuYdfkdslkfks6565safa 你自己的github的注册邮箱地址m
+	The key's randomart image is:
+	+---[RSA 2048]----+
+	| .o o. |
+	| . *.+ + |
+	| = B.O . |
+	| + ++*.* |
+	| *ooS* . |
+	| oo.Boo |
+	| o.E*oo. |
+	| . ++o+. |
+	| .+o. |
+	+----[SHA256]-----+
+5、ls查看是否存在id_rsa（私钥）和id_rsa.pub（公钥）这两个文件：
+	figo@figo-Linux:~/.ssh$ ls
+	id_rsa id_rsa.pub known_hosts
+6、查看公钥并在github网站设置ssh key：
+	cat id_rsa.pub
+7、然后测试是否配对成功：
+	输入：ssh -T git@github.com
+	控制台输出：
+	figo@figo-Linux:~/.ssh$ ssh -T git@github.com
+	Warning: Permanently added the RSA host key for IP address '13.229.188.59' to the list of known hosts.
+	Hi YourFigo! You've successfully authenticated, but GitHub does not provide shell access.
+
+二、配置、使用git
+1、设置全局用户名和邮箱：
+	git config --global user.name "你的github用户名"
+	git config --global user.email "你的github邮箱地址"
+2、clone库：
+	git clone https://github.com/你的github用户名/github仓库名.git
+3、把需要commit的内容add一下：
+	git add .
+4、commit：
+	git commit -m "xxx"
+5、push：
+	git push origin master
+
+
+查看当前用户配置：
+	git config --global --list
+配置用户名和邮箱：
+	git config --global user.name "username"
+	git config --global user.email "XXXX@XX.com"
+
+	
+git clone慢解决：
+1、查找域名对应的ip地址，并修改hosts文件
+	figo@Ubuntu_Server:~$ nslookup github.global.ssl.fastly.Net
+	Server:		183.60.83.19
+	Address:	183.60.83.19#53
+
+	Non-authoritative answer:
+	Name:	github.global.ssl.fastly.Net
+	Address: 67.228.235.91
+
+
+	figo@Ubuntu_Server:~$ nslookup github.com 
+	Server:		183.60.83.19
+	Address:	183.60.83.19#53
+
+	Non-authoritative answer:
+	Name:	github.com
+	Address: 52.74.223.119
+
+2、在hosts文件末尾添加两行
+	151.101.76.249 http://global-ssl.fastly.net
+	192.30.255.113 http://github.com #此处112还是113根据自己的情况调整？
+
+3、刷新DNS缓存
+	sudo /etc/init.d/networking restart
+
+
+将一个本地维护的项目，转换为一个 Git 项目，并托管到 GitHub。
+总共以下几个步骤：
+
+一、 打开命令行终端，进入项目所在的本地目录，将目录初始化为一个 Git 项目
+	$ git init
+	此时会在目录中创建一个 .git 隐藏文件夹
+
+二、 将所有文件放进新的本地 git 仓库
+	$ git add .
+	如果你本地已经有 .gitignore 文件，会按照已有规则过滤不需要添加的文件。如果不想要添加所有文件，可以把 . 符号换成具体的文件名
+
+三、 将添加的文件提交到仓库
+	$ git commit -m "Initial commit"
+
+四、 访问 GitHub，有些时候可能要科学上网，创建一个新仓库，为了避免冲突，先不要勾选 README 和 LICENSE 选项
+
+五、 在生成的项目主页上，复制仓库地址
+	类似于 https://github.com/YourFigo/javaLearn.git
+
+六、 回到命令行终端界面，将本地仓库关联到远程仓库
+	$ git remote add origin https://github.com/superRaytin/alipay-app-ui.git
+	可运行以下命令查看结果：
+	$ git remote -v
+七、 提交代码到 GitHub 仓库
+	$ git push origin master
+	
+	
+	
+Spring Data JPA
+
+ORM
+	ORM（Object-Relational Mapping） 表示对象关系映射。
+	简单的说：ORM就是建立实体类和数据库表之间的关系，从而达到操作实体类就相当于操作数据库表的目的。
+好处
+	当实现一个应用程序时（不使用O-R Mapping），我们可能会写特别多数据访问层的代码，
+	从数据库保存数据、修改数据、删除数据，而这些代码都是重复的。而使用ORM则会大大减少重复性代码。
+常见的orm框架有：
+	Mybatis（ibatis）、Hibernate、Jpa
+Hibernate
+	Hibernate是一个开源的对象关系映射框架，它对JDBC进行了非常轻量级的对象封装，它将POJO与数据库表建立映射关系，
+	是一个全自动的orm框架，hibernate可以自动生成SQL语句，自动执行，使得Java程序员可以使用面向对象的思维来操纵数据库。
+JPA
+	JPA的全称是Java Persistence API， 即Java 持久化API，是SUN公司推出的一套基于ORM的规范，内部是由一系列的接口和抽象类构成。
+	JPA通过JDK 5.0注解描述对象-关系表的映射关系，并将运行期的实体对象持久化到数据库中。
+	查询能力：
+	JPA的查询语言是面向对象而非面向数据库的，它以面向对象的自然语法构造查询语句，可以看成是Hibernate HQL的等价物。
+	JPA定义了独特的JPQL（Java Persistence Query Language），JPQL是EJB QL的一种扩展，它是针对实体的一种查询语言，操作对象是实体，而不是关系数据库的表，
+	而且能够支持批量更新和修改、JOIN、GROUP BY、HAVING 等通常只有 SQL 才能够提供的高级查询特性，甚至还能够支持子查询。
+JPA和Hibernate的关系
+	JPA规范本质上就是一种ORM规范，注意不是ORM框架——因为JPA并未提供ORM实现，它只是制订了一些规范，提供了一些编程的API接口，但具体实现则由服务厂商来提供实现。
+	JPA和Hibernate的关系就像JDBC和JDBC驱动的关系，JPA是规范，Hibernate除了作为ORM框架之外，它也是一种JPA实现。
+	JPA怎么取代Hibernate呢？JDBC规范可以驱动底层数据库吗？答案是否定的，也就是说，如果使用JPA规范进行数据库操作，底层需要hibernate作为其实现类完成数据持久化工作。
+
+JPA常用注解
+	@Entity
+		作用：指定当前类是实体类。
+	@Table
+		作用：指定实体类和表之间的对应关系。
+		属性：
+			name：指定数据库表的名称
+	@Id
+		作用：指定当前字段是主键。
+	@GeneratedValue
+		作用：指定主键的生成方式。。
+		属性：
+			strategy ：指定主键生成策略。
+	@Column
+		作用：指定实体类属性和数据库表之间的对应关系
+		属性：
+			name：指定数据库表的列名称。
+			unique：是否唯一  
+			nullable：是否可以为空  
+			inserttable：是否可以插入  
+			updateable：是否可以更新  
+			columnDefinition: 定义建表时创建此列的DDL  
+			secondaryTable: 从表名。如果此列不建在主表上（默认建在主表），该属性定义该列所在从表的名字搭建开发环境[重点]
+
+	
+入门例子
+pom.xml中导入hibernate的jar依赖
+	hibernate-entitymanager
+	hibernate-c3p0
+JPA的核心配置文件
+	位置：
+	src\main\resources\META-INF\persistence.xml
+	内容：
+	<!--配置持久化单元
+		name：持久化单元名称
+		transaction-type：事务类型
+		 	RESOURCE_LOCAL：本地事务管理
+		 	JTA：分布式事务管理 
+	-->
+    <persistence-unit name="myJpa" transaction-type="RESOURCE_LOCAL">
+        <!--配置JPA规范的服务提供商，提供JPA规范的实现-->
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <!--配置数据库信息和Hibernate配置信息-->
+        <properties>
+            <!-- 数据库驱动 -->
+            <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
+            <!-- 数据库地址 -->
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/jpa_learn" />
+            <!-- 数据库用户名 -->
+            <property name="javax.persistence.jdbc.user" value="root" />
+            <!-- 数据库密码 -->
+            <property name="javax.persistence.jdbc.password" value="123456" />
+
+            <!--jpa提供者的可选配置：我们的JPA规范的提供者为hibernate，所以jpa的核心配置中兼容hibernate的配置
+                显示sql           ：   false|true
+                格式化sql语句      :    false|true
+                自动创建数据库表    ：  hibernate.hbm2ddl.auto
+                        create      : 程序运行时创建数据库表（如果有表，先删除表再创建）
+                        update      ：程序运行时创建表（如果有表，不会创建表）
+                        none        ：不会创建表
+            -->
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+            <property name="hibernate.hbm2ddl.auto" value="create" />
+        </properties>
+    </persistence-unit>
+
+配置实体类和数据库表的映射
+/**
+ * @Author Figo
+ * @Date 2019/12/29 21:39
+ * 客户的实体类
+ * 配置映射关系
+ *  1.实体类和表的映射关系
+ *     @Entity:声明实体类
+ *     @Table : 配置实体类和表的映射关系
+ *         name : 配置数据库表的名称
+ *  2.实体类中属性和表中字段的映射关系
+ */
+@Entity
+@Table(name = "cst_customer")
+public class Customer implements Serializable {
+
+    /**
+     * @Id：声明主键的配置
+     * @GeneratedValue:配置主键的生成策略
+     *      strategy
+     *          GenerationType.IDENTITY ：自增，mysql
+     *                 * 底层数据库必须支持自动增长（底层数据库支持的自动增长方式，对id自增）
+     *          GenerationType.SEQUENCE : 序列，oracle
+     *                  * 底层数据库必须支持序列
+     *          GenerationType.TABLE : jpa提供的一种机制，通过一张数据库表的形式帮助我们完成主键自增
+     *          GenerationType.AUTO ： 由程序自动的帮助我们选择主键生成策略
+     * @Column:配置属性和字段的映射关系
+     *      name：数据库表中字段的名称
+     */
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cust_id")
+    private Long custId; //客户的主键
+
+    @Column(name = "cust_name")
+    private String custName;//客户名称
+
+    @Column(name="cust_source")
+    private String custSource;//客户来源
+
+    @Column(name="cust_level")
+    private String custLevel;//客户级别
+
+    @Column(name="cust_industry")
+    private String custIndustry;//客户所属行业
+
+    @Column(name="cust_phone")
+    private String custPhone;//客户的联系方式
+
+    @Column(name="cust_address")
+    private String custAddress;//客户地址
+}
+
+测试Jpa保存
+public class JpaTest {
+
+    /**
+     * 测试jpa 保存一个客户到数据库中
+     *  Jpa的操作步骤
+     *     1.加载配置文件创建工厂（实体管理器工厂）对象
+     *     2.通过实体管理器工厂获取实体管理器
+     *     3.获取事务对象，开启事务
+     *     4.完成增删改查操作
+     *     5.提交事务（回滚事务）
+     *     6.释放资源
+     */
+    @Test
+    public void testSave() {
+        //1.加载配置文件创建工厂（实体管理器工厂）对象
+        EntityManagerFactory factory = Persistence.createEntityManagerFactory("myJpa");
+        //2.通过实体管理器工厂获取实体管理器
+        EntityManager em = factory.createEntityManager();
+        //3.获取事务对象，开启事务
+        EntityTransaction tx = em.getTransaction(); //获取事务对象
+        tx.begin();//开启事务
+        //4.完成增删改查操作：保存一个客户到数据库中
+        Customer customer = new Customer();
+        customer.setCustName("腾讯");
+        customer.setCustIndustry("科技公司");
+        //保存，
+        em.persist(customer); //保存操作
+        //5.提交事务
+        tx.commit();
+        //6.释放资源
+        em.close();
+        factory.close();
+    }
+}
+
+错误处理
+java.lang.NoClassDefFoundError: javax/xml/bind/JAXBException
+产生这个问题的原因主要是使用JDK 9.0 及其以上，JDK9做了巨大改变，可以使用jdk8
+如果使用jdk9，需要下载四个jar包
+可以下载javax.activation-1.2.0.jar，jaxb-api-2.3.0.jar，jaxb-core-2.3.0.jar，jaxb-impl-2.3.0.jar四个jar包
+JAXB API是java EE的API，而java EE的API不再包含对java SE 9的模块中，因此JAXB APIs不再包含在java SE 9的默认类路径中，因此引发了以上报错
+
+
+主键生成策略
+生成规则由@GeneratedValue设定，JPA提供的四种标准用法为TABLE,SEQUENCE,IDENTITY,AUTO
+
+IDENTITY:主键由数据库自动生成（主要是自动增长型）
+用法：
+    @Id  
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    private Long custId;
+
+SEQUENCE：根据底层数据库的序列来生成主键，条件是数据库支持序列。
+用法：
+    @Id  
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator="payablemoney_seq")  
+    @SequenceGenerator(name="payablemoney_seq", sequenceName="seq_payment")  
+	private Long custId;
+//@SequenceGenerator源码中的定义
+    @Target({TYPE, METHOD, FIELD})   
+    @Retention(RUNTIME)  
+    public @interface SequenceGenerator {  
+       //表示该表主键生成策略的名称，它被引用在@GeneratedValue中设置的“generator”值中
+       String name();  
+       //属性表示生成策略用到的数据库序列名称。
+       String sequenceName() default "";  
+       //表示主键初识值，默认为0
+       int initialValue() default 0;  
+       //表示每次主键值增加的大小，例如设置1，则表示每次插入新记录后自动加1，默认为50
+       int allocationSize() default 50;  
+    }
+
+AUTO：主键由程序控制
+用法：
+    @Id  
+    @GeneratedValue(strategy = GenerationType.AUTO)  
+    private Long custId;
+
+TABLE：使用一个特定的数据库表格来保存主键
+用法：
+    @Id  
+    @GeneratedValue(strategy = GenerationType.TABLE, generator="payablemoney_gen")  
+    @TableGenerator(name = "pk_gen",  
+        table="tb_generator",  
+        pkColumnName="gen_name",  
+        valueColumnName="gen_value",  
+        pkColumnValue="PAYABLEMOENY_PK",  
+        allocationSize=1  
+    ) 
+private Long custId;
+
+//@TableGenerator的定义：
+    @Target({TYPE, METHOD, FIELD})   
+    @Retention(RUNTIME)  
+    public @interface TableGenerator {  
+      //表示该表主键生成策略的名称，它被引用在@GeneratedValue中设置的“generator”值中
+      String name();  
+      //表示表生成策略所持久化的表名，例如，这里表使用的是数据库中的“tb_generator”。
+      String table() default "";  
+      //catalog和schema具体指定表所在的目录名或是数据库名
+      String catalog() default "";  
+      String schema() default "";  
+      //属性的值表示在持久化表中，该主键生成策略所对应键值的名称。例如在“tb_generator”中将“gen_name”作为主键的键值
+      String pkColumnName() default "";  
+      //属性的值表示在持久化表中，该主键当前所生成的值，它的值将会随着每次创建累加。例如，在“tb_generator”中将“gen_value”作为主键的值 
+      String valueColumnName() default "";  
+      //属性的值表示在持久化表中，该生成策略所对应的主键。例如在“tb_generator”表中，将“gen_name”的值为“CUSTOMER_PK”。 
+      String pkColumnValue() default "";  
+      //表示主键初识值，默认为0。 
+      int initialValue() default 0;  
+      //表示每次主键值增加的大小，例如设置成1，则表示每次创建新记录后自动加1，默认为50。
+      int allocationSize() default 50;  
+      UniqueConstraint[] uniqueConstraints() default {};  
+    } 
+
+    //这里应用表tb_generator，定义为 ：
+    CREATE TABLE  tb_generator (  
+      id NUMBER NOT NULL,  
+      gen_name VARCHAR2(255) NOT NULL,  
+      gen_value NUMBER NOT NULL,  
+      PRIMARY KEY(id)  
+    )
+
+
+
+抽取JPA工具类
+
+jpa操作的操作步骤
+	1.加载配置文件创建实体管理器工厂
+		Persisitence：静态方法（根据持久化单元名称创建实体管理器工厂）
+			createEntityMnagerFactory（持久化单元名称）
+		作用：创建实体管理器工厂
+		
+	2.根据实体管理器工厂，创建实体管理器
+		EntityManagerFactory ：获取EntityManager对象
+		方法：createEntityManager
+		* 内部维护的很多的内容
+			内部维护了数据库信息，
+			维护了缓存信息
+			维护了所有的实体管理器对象
+			再创建EntityManagerFactory的过程中会根据配置创建数据库表
+		* EntityManagerFactory的创建过程比较浪费资源
+		特点：线程安全的对象
+			多个线程访问同一个EntityManagerFactory不会有线程安全问题
+		* 如何解决EntityManagerFactory的创建过程浪费资源（耗时）的问题？
+		思路：创建一个公共的EntityManagerFactory的对象
+		* 静态代码块的形式创建EntityManagerFactory
+	3.创建事务对象，开启事务
+		EntityManager对象：实体类管理器
+			beginTransaction : 创建事务对象
+			presist ： 保存
+			merge  ： 更新
+			remove ： 删除
+			find/getRefrence ： 根据id查询
+			
+		Transaction 对象 ： 事务
+			begin：开启事务
+			commit：提交事务
+			rollback：回滚
+	4.增删改查操作
+	5.提交事务
+	6.释放资源
+
+JpaUtils
+/**
+ * @Author Figo
+ * @Date 2019/12/29 23:05
+ * JPA工具类
+ * 解决实体管理器工厂的浪费资源和耗时问题
+ * 通过静态代码块的形式，当程序第一次访问此工具类时，创建一个公共的实体管理器工厂对象
+ * 第一次访问getEntityManager方法：经过静态代码块创建一个factory对象，再调用方法创建一个EntityManager对象
+ * 第二次方法getEntityManager方法：直接通过一个已经创建好的factory对象，创建EntityManager对象
+ */
+public class JpaUtils {
+
+    private static EntityManagerFactory factory;
+
+    static  {
+        //1.加载配置文件，创建entityManagerFactory
+        factory = Persistence.createEntityManagerFactory("myJpa");
+    }
+
+    /**
+     * 获取EntityManager对象
+     */
+    public static EntityManager getEntityManager() {
+        return factory.createEntityManager();
+    }
+}
+
+
+查询 entityManager.find()
+使用find方法查询：
+	1.查询的对象就是当前客户对象本身
+	2.在调用find方法的时候，就会发送sql语句查询数据库
+	立即加载
+
+@Test
+public  void testFind() {
+	EntityManager entityManager = JpaUtils.getEntityManager();
+	EntityTransaction tx = entityManager.getTransaction();
+	tx.begin();
+	Customer customer = entityManager.find(Customer.class, 1l);
+	System.out.print(customer);
+	tx.commit();
+	entityManager.close();
+}
+
+
+查询 entityManager.getReference()
+getReference方法
+	1.获取的对象是一个动态代理对象
+	2.调用getReference方法不会立即发送sql语句查询数据库
+		当调用查询结果对象的时候，才会发送查询的sql语句：什么时候用，什么时候发送sql语句查询数据库
+	延迟加载（懒加载）
+		得到的是一个动态代理对象
+		什么时候用，什么使用才会查询
+
+@Test
+public  void testReference() {
+	EntityManager entityManager = JpaUtils.getEntityManager();
+	EntityTransaction tx = entityManager.getTransaction();
+	tx.begin();
+	Customer customer = entityManager.getReference(Customer.class, 1l);
+	System.out.print(customer);
+	tx.commit();
+	entityManager.close();
+}
+
+
+删除
+
+/**
+ * 删除客户的案例
+ */
+@Test
+public  void testRemove() {
+	EntityManager entityManager = JpaUtils.getEntityManager();
+	EntityTransaction tx = entityManager.getTransaction();
+	tx.begin();
+	Customer customer = entityManager.find(Customer.class,1l);
+	entityManager.remove(customer);
+	tx.commit();
+	entityManager.close();
+}
+
+
+更新
+
+/**
+ * 更新客户的操作
+ *      merge(Object)
+ */
+@Test
+public  void testUpdate() {
+	EntityManager entityManager = JpaUtils.getEntityManager();
+	EntityTransaction tx = entityManager.getTransaction();
+	tx.begin();
+	Customer customer = entityManager.find(Customer.class,1l);
+	customer.setCustIndustry("it教育");
+	entityManager.merge(customer);
+	tx.commit();
+	entityManager.close();
+}
+
+
+使用JPQL进行查询
+JPQL全称Java Persistence Query Language，其特征与原生SQL语句类似，并且完全面向对象，通过类名和属性访问，而不是表名和表的属性。
+这种方式主要是使用entityManager.createQuery()方法创建查询对象，然后使用query.getResultList()或者query.getSingleResult()来获取查询结果。
+
+查询全部
+/**
+ * 查询全部
+ *      jqpl：from cn.figo.domain.Customer
+ *      sql：SELECT * FROM cst_customer
+ */
+@Test
+public void testFindAll() {
+	//1.获取entityManager对象
+	EntityManager em = JpaUtils.getEntityManager();
+	//2.开启事务
+	EntityTransaction tx = em.getTransaction();
+	tx.begin();
+	//3.查询全部
+	String jpql = "from Customer ";
+	Query query = em.createQuery(jpql);//创建Query查询对象，query对象才是执行jqpl的对象
+	//发送查询，并封装结果集
+	List list = query.getResultList();
+	for (Object obj : list) {
+		System.out.print(obj);
+	}
+	//4.提交事务
+	tx.commit();
+	//5.释放资源
+	em.close();
+}
+
+排序查询
+/**
+ * 排序查询： 倒序查询全部客户（根据id倒序）
+ *      sql：SELECT * FROM cst_customer ORDER BY cust_id DESC
+ *      jpql：from Customer order by custId desc
+ * 进行jpql查询
+ *      1.创建query查询对象
+ *      2.对参数进行赋值
+ *      3.查询，并得到返回结果
+ */
+@Test
+public void testOrders() {
+	//1.获取entityManager对象
+	EntityManager em = JpaUtils.getEntityManager();
+	//2.开启事务
+	EntityTransaction tx = em.getTransaction();
+	tx.begin();
+	//3.查询全部
+	String jpql = "from Customer order by custId desc";
+	Query query = em.createQuery(jpql);//创建Query查询对象，query对象才是执行jqpl的对象
+	//发送查询，并封装结果集
+	List list = query.getResultList();
+	for (Object obj : list) {
+		System.out.println(obj);
+	}
+	//4.提交事务
+	tx.commit();
+	//5.释放资源
+	em.close();
+}
+
+查询记录数
+ /**
+ * 使用jpql查询，统计客户的总数
+ *      sql：SELECT COUNT(cust_id) FROM cst_customer
+ *      jpql：select count(custId) from Customer
+ */
+@Test
+public void testCount() {
+	//1.获取entityManager对象
+	EntityManager em = JpaUtils.getEntityManager();
+	//2.开启事务
+	EntityTransaction tx = em.getTransaction();
+	tx.begin();
+	//3.查询全部
+	//i.根据jpql语句创建Query查询对象
+	String jpql = "select count(custId) from Customer";
+	Query query = em.createQuery(jpql);
+	//ii.对参数赋值
+	//iii.发送查询，并封装结果
+	/**
+	 * getResultList ： 直接将查询结果封装为list集合
+	 * getSingleResult : 得到唯一的结果集
+	 */
+	Object result = query.getSingleResult();
+	System.out.println(result);
+	//4.提交事务
+	tx.commit();
+	//5.释放资源
+	em.close();
+}
+
+分页查询
+/**
+ * 分页查询
+ *      sql：select * from cst_customer limit 0,2
+ *      jqpl : from Customer
+ */
+@Test
+public void testPaged() {
+	//1.获取entityManager对象
+	EntityManager em = JpaUtils.getEntityManager();
+	//2.开启事务
+	EntityTransaction tx = em.getTransaction();
+	tx.begin();
+	//3.查询全部
+	//i.根据jpql语句创建Query查询对象
+	String jpql = "from Customer";
+	Query query = em.createQuery(jpql);
+	//ii.对参数赋值 -- 分页参数
+	//起始索引
+	query.setFirstResult(0);
+	//每页查询的条数
+	query.setMaxResults(2);
+	//iii.发送查询，并封装结果
+	/**
+	 * getResultList ： 直接将查询结果封装为list集合
+	 * getSingleResult : 得到唯一的结果集
+	 */
+	List list = query.getResultList();
+	for(Object obj : list) {
+		System.out.println(obj);
+	}
+	//4.提交事务
+	tx.commit();
+	//5.释放资源
+	em.close();
+}
+
+条件查询
+/**
+ * 条件查询
+ *     案例：查询客户名称以‘腾’开头的客户
+ *          sql：SELECT * FROM cst_customer WHERE cust_name LIKE  ?
+ *          jpql : from Customer where custName like ?
+ */
+@Test
+public void testCondition() {
+	//1.获取entityManager对象
+	EntityManager em = JpaUtils.getEntityManager();
+	//2.开启事务
+	EntityTransaction tx = em.getTransaction();
+	tx.begin();
+	//3.查询全部
+	//i.根据jpql语句创建Query查询对象
+	String jpql = "from Customer where custName like ? ";
+	Query query = em.createQuery(jpql);
+	//ii.对参数赋值 -- 占位符参数
+	//第一个参数：占位符的索引位置（从1开始），第二个参数：取值
+	query.setParameter(1,"腾%");
+	//iii.发送查询，并封装结果
+	/**
+	 * getResultList ： 直接将查询结果封装为list集合
+	 * getSingleResult : 得到唯一的结果集
+	 */
+	List list = query.getResultList();
+	for(Object obj : list) {
+		System.out.println(obj);
+	}
+	//4.提交事务
+	tx.commit();
+	//5.释放资源
+	em.close();
+}
+
+
+SpringDataJpa
+
+基本介绍：
+Spring Data JPA 是 Spring 基于 ORM 框架、JPA 规范的基础上封装的一套JPA应用框架，可使开发者用极简的代码即可实现对数据库的访问和操作。
+它提供了包括增删改查等在内的常用功能，且易于扩展！学习并使用 Spring Data JPA 可以极大提高开发效率！
+
+常用方式：
+Spring Data JPA 让我们解脱了DAO层的操作，基本上所有CRUD都可以依赖于它来实现,在实际的工作工程中，推荐使用Spring Data JPA + ORM（如：hibernate）完成操作，
+这样在切换不同的ORM框架时提供了极大的方便，同时也使数据库层操作更加简单，方便解耦。
+
+Spring Data JPA 是如何简化数据库操作的呢？ 
+使用了SpringDataJpa，我们的dao层中只需要写接口，就自动具有了增删改查、分页查询等方法。
+
+Spring Data JPA 与 JPA和hibernate之间的关系
+JPA是一套规范，内部是有接口和抽象类组成的。
+hibernate是一套成熟的ORM框架，而且Hibernate实现了JPA规范，所以也可以称hibernate为JPA的一种实现方式，我们使用JPA的API编程，意味者我们使用面向接口编程。
+Spring Data JPA是Spring提供的一套对JPA操作更加高级的封装，是在JPA规范下的专门用来进行数据持久化的解决方案。
+
+spring整合SpringDataJpa配置文件
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/data/jpa
+		http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+
+    <!--spring 和 spring data jpa的配置-->
+
+    <!-- 1.创建entityManagerFactory对象交给spring容器管理-->
+    <bean id="entityManagerFactoty" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <!--配置的扫描的包（实体类所在的包） -->
+        <property name="packagesToScan" value="cn.figo.domain" />
+        <!-- jpa的实现厂家 -->
+        <property name="persistenceProvider">
+            <bean class="org.hibernate.jpa.HibernatePersistenceProvider"/>
+        </property>
+
+        <!--jpa的供应商适配器 -->
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <!--配置是否自动创建数据库表 -->
+                <property name="generateDdl" value="false" />
+                <!--指定数据库类型 -->
+                <property name="database" value="MYSQL" />
+                <!--数据库方言：支持的特有语法 -->
+                <property name="databasePlatform" value="org.hibernate.dialect.MySQLDialect" />
+                <!--是否显示sql -->
+                <property name="showSql" value="true" />
+            </bean>
+        </property>
+
+        <!--jpa的方言 ：高级的特性 -->
+        <property name="jpaDialect" >
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaDialect" />
+        </property>
+
+    </bean>
+
+    <!--2.创建数据库连接池 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="user" value="root"></property>
+        <property name="password" value="123456"></property>
+        <property name="jdbcUrl" value="jdbc:mysql:///jpa_learn?characterEncoding=utf-8" ></property>
+        <property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+    </bean>
+
+    <!--3.整合spring dataJpa-->
+    <jpa:repositories base-package="cn.figo.dao" transaction-manager-ref="transactionManager"
+                      entity-manager-factory-ref="entityManagerFactoty" ></jpa:repositories>
+
+    <!--4.配置事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactoty"></property>
+    </bean>
+
+    <!-- 4.txAdvice-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="find*" read-only="true"/>
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 5.aop-->
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* cn.figo.service.*.*(..))" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut" />
+    </aop:config>
+
+
+    <!--5.声明式事务 -->
+
+    <!-- 6. 配置包扫描-->
+    <context:component-scan base-package="cn.figo" ></context:component-scan>
+</beans>
+
+映射实体类和数据库表
+实体类和表的映射关系
+	@Eitity
+	@Table
+类中属性和表中字段的映射关系
+	@Id
+	@GeneratedValue
+	@Column
+
+编写符合SpringDataJpa的dao层接口
+JpaRepository<操作的实体类类型，实体类中主键属性的类型>
+	封装了基本CRUD操作
+JpaSpecificationExecutor<操作的实体类类型>
+	封装了复杂查询（分页）
+public interface CustomerDao extends JpaRepository<Customer,Long>, JpaSpecificationExecutor<Customer> {}
+继承了这两个接口后，CustomerDao就具有了以下持久化方法
+	findOne（id） ：根据id查询
+	save(customer):保存或者更新（依据：传递的实体类对象中，是否包含id属性）
+	delete（id） ：根据id删除
+	findAll() : 查询全部
+
+
+然后我们在没有实现dao接口的情况下，就可以进行根据id查询：findOne
+@RunWith(SpringJUnit4ClassRunner.class) //声明spring提供的单元测试环境
+@ContextConfiguration(locations = "classpath:applicationContext.xml")//指定spring容器的配置信息
+public class CustomerDaoTest {
+
+    @Autowired
+    private CustomerDao customerDao;
+
+    /**
+     * 根据id查询
+     */
+    @Test
+    public void testFindOne() {
+        Customer customer = customerDao.findOne(4l);
+        System.out.println(customer);
+    }
+}
+
+/**
+ * 根据id从数据库查询
+ *      @Transactional : 保证getOne正常运行
+ *  findOne：
+ *      em.find()           :立即加载
+ *  getOne：
+ *      em.getReference     :延迟加载
+ *      * 返回的是一个客户的动态代理对象
+ *      * 什么时候用，什么时候查询
+ */
+@Test
+@Transactional
+public void  testGetOne() {
+	Customer customer = customerDao.getOne(4l);
+	System.out.println(customer);
+}
+
+保存或者更新
+save : 保存或者更新
+根据传递的对象是否存在主键id，如果没有id主键属性：保存；如果存在id主键属性，根据id查询数据，更新数据
+@Test
+public void testSave() {
+	Customer customer  = new Customer();
+	customer.setCustName("网易");
+	customer.setCustLevel("vip");
+	customer.setCustIndustry("it");
+	customerDao.save(customer);
+}
+
+@Test
+public void testUpdate() {
+	Customer customer  = new Customer();
+	customer.setCustId(4l);
+	customer.setCustName("网易游戏");
+	customerDao.save(customer);
+}
+
+删除 delete
+@Test
+public void testDelete () {
+	customerDao.delete(3l);
+}
+
+查询所有 findAll
+@Test
+public void testFindAll() {
+	List<Customer> list = customerDao.findAll();
+	for(Customer customer : list) {
+		System.out.println(customer);
+	}
+}
+
+查询记录数 count
+@Test
+public void testCount() {
+	long count = customerDao.count();//查询全部的客户数量
+	System.out.println(count);
+}
+
+判断id为4的客户是否存在 exists
+/**
+ * 测试：判断id为4的客户是否存在
+ *      1. 可以查询以下id为4的客户
+ *          如果值为空，代表不存在，如果不为空，代表存在
+ *      2. 判断数据库中id为4的客户的数量
+ *          如果数量为0，代表不存在，如果大于0，代表存在
+ */
+@Test
+public void  testExists() {
+	boolean exists = customerDao.exists(4l);
+	System.out.println("id为4的客户 是否存在："+exists);
+}
+
+springDataJpa的运行过程分析
+1.通过JdkDynamicAopProxy的invoke方法创建了一个动态代理对象
+2.SimpleJpaRepository当中封装了JPA的操作（借助JPA的api完成数据库的CRUD）
+3.通过hibernate完成数据库操作（封装了jdbc）
+
+
+在SpringDataJpa中使用JPQL进行查询
+需要将JPQL语句配置到接口方法上
+	1.特有的查询：需要在dao接口上配置方法
+	2.在新添加的方法上，使用注解的形式配置jpql查询语句
+	3.注解 ： @Query
+	
+根据一个占位符查询
+在CustomerDao中新增
+/**
+ * 根据客户名称查询客户
+ *      使用jpql的形式查询
+ *  jpql：from Customer where custName = ?
+ *  配置jpql语句，使用的@Query注解
+ */
+@Query(value="from Customer where custName = ?")
+public Customer findJpql(String custName);
+然后测试
+@Test
+public void  testFindJPQL() {
+	Customer customer = customerDao.findJpql("网易");
+	System.out.println(customer);
+}
+
+根据多个占位符查询
+在CustomerDao中新增
+/**
+ * 根据客户名称和客户id查询客户
+ *      jpql： from Customer where custName = ? and custId = ?
+ *  对于多个占位符参数
+ *      赋值的时候，默认的情况下，占位符的位置需要和方法参数中的位置保持一致
+ *  可以指定占位符参数的位置
+ *      ? 索引的方式，指定此占位的取值来源
+ */
+@Query(value = "from Customer where custName = ?2 and custId = ?1")
+public Customer findCustNameAndId(Long id,String name);
+然后测试
+@Test
+public void testFindCustNameAndId() {
+    // Customer customer =  customerDao.findCustNameAndId("传智播客",1l);
+    Customer customer =  customerDao.findCustNameAndId(5l,"网易");
+    System.out.println(customer);
+}
+
+使用jpql进行更新
+在CustomerDao中新增
+/**
+ * 使用jpql完成更新操作
+ *    更新5号客户的名称，将名称改为“支付宝”
+ *  sql  ：update cst_customer set cust_name = ? where cust_id = ?
+ *  jpql : update Customer set custName = ? where custId = ?
+ *  @Query : 代表的是进行查询
+ *      * 声明此方法是用来进行更新操作
+ *  @Modifying
+ *      * 当前执行的是一个更新操作
+ */
+@Query(value = " update Customer set custName = ?2 where custId = ?1 ")
+@Modifying
+public void updateCustomer(long custId,String custName);
+然后测试
+/**
+ * 测试jpql的更新操作
+ *  * springDataJpa中使用jpql完成 更新/删除操作
+ *         * 需要手动添加事务的支持
+ *         * 默认会执行结束之后，回滚事务
+ *   @Rollback : 设置是否自动回滚
+ *          false | true
+ */
+@Test
+@Transactional //添加事务的支持
+@Rollback(value = false)
+public void testUpdateCustomer() {
+	customerDao.updateCustomer(5l,"支付宝");
+}
+
+使用原生sql进行查询
+1.特有的查询：需要在dao接口上配置方法
+2.在新添加的方法上，使用注解的形式配置sql查询语句
+3.注解 ： @Query
+	value ：jpql语句 | sql语句
+	nativeQuery ：false（使用jpql查询） | true（使用本地查询：sql查询）
+		是否使用本地查询
+
+在CustomerDao中新增
+/**
+ * 使用sql的形式查询：
+ *     查询全部的客户
+ *  sql ： select * from cst_customer;
+ *  Query : 配置sql查询
+ *      value ： sql语句
+ *      nativeQuery ： 查询方式
+ *          true ： sql查询
+ *          false：jpql查询
+ */
+@Query(value = " select * from cst_customer" ,nativeQuery = true)
+public List<Object [] > findSql();
+
+@Query(value="select * from cst_customer where cust_name like ?1",nativeQuery = true)
+public List<Object [] > findSqlByCondition(String name);
+
+然后测试
+//测试sql查询
+@Test
+public void testFindSql() {
+	List<Object[]> list = customerDao.findSql();
+	for(Object [] obj : list) {
+		System.out.println(Arrays.toString(obj));
+	}
+}
+
+@Test
+public void testFindSqlByCondition() {
+	List<Object[]> list = customerDao.findSqlByCondition("%宝");
+	for(Object [] obj : list) {
+		System.out.println(Arrays.toString(obj));
+	}
+}
+
+
+根据方法名称规则查询
+是对jpql查询更深一层的封装
+只需要按照SpringDataJpa提供的方法名称规则定义方法，不再需要配置jpql语句，就可以完成查询
+方法名的约定：findByCustName   --   根据客户名称查询
+	findBy : 查询
+	对象中的属性名（首字母大写） ： 查询的条件 CustName
+		默认情况 ： 使用 等于的方式查询
+在springdataJpa的运行阶段，会根据方法名称和属性名称进行解析
+	findBy --> from  xxx(实体类)，属性名称  --> where  custName =
+
+比如，根据CustName进行查询
+public Customer findByCustName(String custName);
+测试方法命名规则的查询
+@Test
+public void testNaming() {
+	Customer customer = customerDao.findByCustName("支付宝");
+	System.out.println(customer);
+}
+
+根据CustName进行模糊查询
+public List<Customer> findByCustNameLike(String custName);
+测试方法命名规则的查询
+@Test
+public void testFindByCustNameLike() {
+	List<Customer> list = customerDao.findByCustNameLike("支付%");
+	for (Customer customer : list) {
+		System.out.println(customer);
+	}
+}
+
+多条件的模糊查询和精准查询
+public Customer findByCustNameLikeAndCustIndustry(String custName,String custIndustry);
+测试方法命名规则的查询
+@Test
+public void testFindByCustNameLikeAndCustIndustry() {
+	Customer customer = customerDao.findByCustNameLikeAndCustIndustry("支付%", "it");
+	System.out.println(customer);
+}
+
+
+
+Specifications动态查询
+
+在JpaSpecificationExecutor中有下列方法：
+	//查询单个对象
+	T findOne(Specification<T> spec); 
+	
+	//查询列表
+	List<T> findAll(Specification<T> spec);
+
+	//查询全部，分页
+	//pageable：分页参数
+	//返回值：分页pageBean（page：是springdatajpa提供的）
+	Page<T> findAll(Specification<T> spec, Pageable pageable);
+
+	//查询列表
+	//Sort：排序参数
+	List<T> findAll(Specification<T> spec, Sort sort);
+
+	//统计查询
+	long count(Specification<T> spec);
+	
+	
+	其中，Specification 为查询条件，需要自定义我们自己的Specification实现类
+		实现 toPredicate 方法
+			//root：查询的根对象（查询的任何属性都可以从根对象中获取）
+			//CriteriaQuery：顶层查询对象，自定义查询方式（了解：一般不用）
+			//CriteriaBuilder：查询的构造器，封装了很多的查询条件
+			Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb); //封装查询条件
+
+			
+自定义查询条件spec
+1.实现Specification接口（提供泛型：查询的对象类型）
+2.实现toPredicate方法（构造查询条件）
+3.需要借助方法参数中的两个参数
+	root：获取需要查询的对象属性
+	CriteriaBuilder：构造查询条件的，内部封装了很多的查询条件（模糊匹配，精准匹配）
+
+
+自定义findOne单个条件查询
+@Test
+public void testSpec() {
+
+	Specification<Customer> spec = new Specification<Customer>() {
+		@Override
+		public Predicate toPredicate(Root<Customer> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+			// 取需要查询的对象属性
+			Path<Object> custName = root.get("custName");
+			// 进行精准的匹配，
+			// 第一个参数：需要比较的属性（path对象）,第二个参数：当前需要比较的取值
+			Predicate predicate = cb.equal(custName, "支付宝");
+			return predicate;
+		}
+	};
+	Customer customer = customerDao.findOne(spec);
+	System.out.println(customer);
+}
+
+自定义findOne多条件查询
+@Test
+public void testSpec1() {
+
+	Specification<Customer> spec = new Specification<Customer>() {
+		@Override
+		public Predicate toPredicate(Root<Customer> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+			// 取需要查询的对象属性
+			Path<Object> custName = root.get("custName");
+			Path<Object> custIndustry = root.get("custIndustry");
+			// 构造第一个查询条件的精确匹配
+			Predicate p1 = cb.equal(custName, "支付宝");
+			// 构造第二个查询条件的精确匹配
+			Predicate p2 = cb.equal(custIndustry, "it");
+			// 将多个查询条件组合到一起
+			Predicate and = cb.and(p1, p2);
+			// cb.or();//以或的形式拼接多个查询条件
+			return and;
+		}
+	};
+	Customer customer = customerDao.findOne(spec);
+	System.out.println(customer);
+}
+
+自定义findAll模糊匹配
+前面使用 equal 直接使用path对象（属性），进行比较即可
+但是 gt，lt,ge,le,like 不能直接使用path对象，要根据path对象指定比较的参数类型：path.as(类型的字节码对象)，
+再进行比较：cb.like(custName.as(String.class), "支付%");
+@Test
+public void testSpec2() {
+	//构造查询条件
+	Specification<Customer> spec = new Specification<Customer>() {
+		@Override
+		public Predicate toPredicate(Root<Customer> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+			//查询属性：客户名
+			Path<Object> custName = root.get("custName");
+			//查询方式：模糊匹配
+			Predicate like = cb.like(custName.as(String.class), "支付%");
+			return like;
+		}
+	};
+	List<Customer> list = customerDao.findAll(spec);
+	for (Customer customer : list) {
+		System.out.println(customer);
+	}
+}
+
+排序查询
+创建排序对象,需要调用构造方法实例化sort对象
+Sort sort = new Sort(Sort.Direction.DESC,"custId");
+第一个参数：排序的顺序（倒序，正序）
+	Sort.Direction.DESC:倒序
+	Sort.Direction.ASC ： 升序
+第二个参数：排序的属性名称
+@Test
+public void testSpec3() {
+	//构造查询条件
+	Specification<Customer> spec = new Specification<Customer>() {
+		@Override
+		public Predicate toPredicate(Root<Customer> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+			//查询属性：客户名
+			Path<Object> custName = root.get("custName");
+			//查询方式：模糊匹配
+			Predicate like = cb.like(custName.as(String.class), "支付%");
+			return like;
+		}
+	};
+	//添加排序
+	Sort sort = new Sort(Sort.Direction.DESC,"custId");
+	List<Customer> list = customerDao.findAll(spec, sort);
+	for (Customer customer : list) {
+		System.out.println(customer);
+	}
+}
+
+分页查询
+Pageable：分页参数
+Pageable pageable = new PageRequest(0,2);
+	分页参数：查询的页码，每页查询的条数
+	第一个参数：当前查询的页数（从0开始），第二个参数：每页查询的数量
+分页查询的findAll有两个重载方法
+	findAll(Specification,Pageable)：带有条件的分页
+	findAll(Pageable)：没有条件的分页
+@Test
+public void testSpec4() {
+	Specification spec = null;
+	//PageRequest对象是Pageable接口的实现类
+	/**
+	 * 创建PageRequest的过程中，需要调用他的构造方法传入两个参数
+	 *      第一个参数：当前查询的页数（从0开始）
+	 *      第二个参数：每页查询的数量
+	 */
+	Pageable pageable = new PageRequest(0,2);
+	//分页查询
+	Page<Customer> page = customerDao.findAll(pageable);
+//        Page<Customer> page = customerDao.findAll(spec, pageable);
+	System.out.println(page.getContent()); //得到数据集合列表
+	System.out.println(page.getTotalElements());//得到总条数
+	System.out.println(page.getTotalPages());//得到总页数
+}
+
+
+
+多表操作
+一对多操作
+客户和联系人的关系，一个客户可以对应多个联系人，一个联系人只能对应一个客户
+
+配置一对多和多对一关系并配置外键
+@OneToMany : 配置一对多关系
+	targetEntity ：对方对象的字节码对象
+	mappedBy：对方配置关系的属性名称，这样主表就放弃外键维护权
+	cascade : 配置级联（可以配置到设置多表的映射关系的注解上），取值有：
+		 CascadeType.ALL: 所有
+		 CascadeType.MERGE：更新
+		 CascadeType.PERSIST：保存
+		 CascadeType.REMOVE：删除
+	fetch : 配置关联对象的加载方式,取值有：
+		EAGER   ：立即加载
+		LAZY    ：延迟加载
+@JoinColumn : 配置外键
+	name：外键字段名称
+	referencedColumnName：参照的主表的主键字段名称
+@ManyToOne : 配置多对一关系
+	targetEntity：对方的实体类字节码
+	
+在配置文件的entityManagerFactory的bean中注入jpa的配置信息
+<!--注入jpa的配置信息
+	加载jpa的基本配置信息和jpa实现方式（hibernate）的配置信息
+	hibernate.hbm2ddl.auto : 自动创建数据库表
+		create ： 每次都会重新创建数据库表
+		update：有表不会重新创建，没有表会重新创建表
+-->
+<property name="jpaProperties">
+	<props>
+		<prop key="hibernate.hbm2ddl.auto">create</prop>
+	</props>
+</property>
+
+在客户实体类中配置联系人集合
+@OneToMany(targetEntity = LinkMan.class)
+@JoinColumn(name="lkm_cust_id",referencedColumnName = "cust_id")
+private Set<LinkMan> linkMans = new HashSet<>();
+在客户实体类上（一的一方）添加了外键了配置，所以对于客户而言，也具备了维护外键的作用
+
+
+在联系人实体类中添加客户对象
+@ManyToOne(targetEntity = Customer.class,fetch = FetchType.LAZY)
+@JoinColumn(name = "lkm_cust_id",referencedColumnName = "cust_id")
+private Customer customer;
+外键配置到了多的一方，就会在多的一方维护外键
+
+测试一下保存操作
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = "classpath:applicationContext.xml")
+public class OneToManyTest {
+
+    @Autowired
+    private CustomerDao customerDao;
+
+    @Autowired
+    private LinkManDao linkManDao;
+
+    @Test
+    @Transactional //配置事务
+    @Rollback(false) //不自动回滚
+    public void testAdd() {
+        //创建一个客户，创建一个联系人
+        Customer customer = new Customer();
+        customer.setCustName("百度");
+
+        LinkMan linkMan = new LinkMan();
+        linkMan.setLkmName("小李");
+
+        customerDao.save(customer);
+        linkManDao.save(linkMan);
+    }
+}
+这里实体类中没有配置关系，在测试中并没有把customer和linkMan这两个对象关联起来，因此外键列显示为空，因此需要在save方法之前添加：
+customer.getLinkMans().add(linkMan);
+这个测试是在客户（一的一方）进行维护外键
+
+我们也可以在联系人中（多的一方）维护外键
+linkMan.setCustomer(customer);
+
+两个同时维护外键也可以
+linkMan.setCustomer(customer);//由于配置了多的一方到一的一方的关联关系（当保存的时候，就已经对外键赋值）
+customer.getLinkMans().add(linkMan);//由于配置了一的一方到多的一方的关联关系（发送一条update语句）
+但是由于一的一方可以维护外键，会发送update语句，如果我们不希望多余的update去维护外键，可以在一的一方放弃维护权。
+
+在客户实体类中只声明一对多关系即可在一的一方放弃外键的维护权。
+@OneToMany(mappedBy = "customer",cascade = CascadeType.ALL)
+private Set<LinkMan> linkMans = new HashSet<>();
+
+
+级联操作
+在OneToMany注解中可以添加级联cascade
+
+@OneToMany(mappedBy = "customer",cascade = CascadeType.ALL)
+private Set<LinkMan> linkMans = new HashSet<>();
+ALL就是增删改操作都可以级联
+
+测试保存一个客户的同时，保存客户的所有联系人
+@Test
+@Transactional //配置事务
+@Rollback(false) //不自动回滚
+public void testCascadeAdd() {
+    Customer customer = new Customer();
+    customer.setCustName("百度1");
+
+    LinkMan linkMan = new LinkMan();
+    linkMan.setLkmName("小李1");
+
+    linkMan.setCustomer(customer);
+    customer.getLinkMans().add(linkMan);
+
+    customerDao.save(customer);
+}
+
+测试级联删除：删除1号客户的同时，删除1号客户的所有联系人
+@Test
+@Transactional //配置事务
+@Rollback(false) //不自动回滚
+public void testCascadeRemove() {
+	//1.查询1号客户
+	Customer customer = customerDao.findOne(1l);
+	//2.删除1号客户
+	customerDao.delete(customer);
+}
+
+多对多操作
+对于User和Role两个实体类，是多对多关系
+
+在User中配置
+声明表的多对多关系的配置
+@ManyToMany(targetEntity = Role.class)
+配置中间表（包含两个外键）
+@JoinTable
+	name : 中间表的名称
+	joinColumns：配置当前对象在中间表的外键，它是一个@JoinColumn的数组
+		name：外键名
+		referencedColumnName：参照的主表的主键名
+	inverseJoinColumns：配置对方对象在中间表的外键
+
+User中配置如下
+@ManyToMany(targetEntity = Role.class,cascade = CascadeType.ALL)
+@JoinTable(name = "sys_user_role",
+		//joinColumns,当前对象在中间表中的外键
+		joinColumns = {@JoinColumn(name = "sys_user_id",referencedColumnName = "user_id")},
+		//inverseJoinColumns，对方对象在中间表的外键
+		inverseJoinColumns = {@JoinColumn(name = "sys_role_id",referencedColumnName = "role_id")}
+)
+private Set<Role> roles = new HashSet<>();
+
+然后在Role也做同样的配置
+
+测试一下
+@Test
+@Transactional
+@Rollback(false)
+public void  testAdd() {
+	User user = new User();
+	user.setUserName("小李");
+
+	Role role = new Role();
+	role.setRoleName("java程序员");
+
+	//配置用户到角色关系，可以对中间表中的数据进行维护     1-1
+	user.getRoles().add(role);
+
+	userDao.save(user);
+	roleDao.save(role);
+}
+
+但如果同时使用User和Role都维护中间表会造成中间表记录重复，从而抛出异常
+user.getRoles().add(role);
+role.getUsers().add(user);
+
+因此需要在被动的一方放弃中间表的维护权，在Role中只需要按User配置就行了
+@ManyToMany(mappedBy = "roles")  //配置多表关系
+private Set<User> users = new HashSet<>();
+
+
+对象导航查询
+对象图导航检索方式是根据已经加载的对象，导航到他的关联对象。它利用类与类之间的关系来检索对象。
+例如：我们通过ID查询方式查出一个客户，可以调用Customer类中的getLinkMans()方法来获取该客户的所有联系人。
+对象导航查询的使用要求是：两个对象之间必须存在关联关系。
+
+我们查询客户时，要不要把联系人查询出来？
+如果我们不查的话，在用的时候还要自己写代码，调用方法去查询。如果我们查出来的，不使用时又会白白的浪费了服务器内存。
+采用延迟加载的思想。通过配置的方式来设定当我们在需要使用时，发起真正的查询。
+
+对于一对多的情况，我们在客户实体类（一的一方）进行查询，SpringDataJpa默认是延迟加载的。
+//测试对象导航查询（查询一个对象的时候，通过此对象查询所有的关联对象）
+@Test
+@Transactional // 解决在java代码中的no session问题(could not initialize proxy - no Session)
+public void  testQuery1() {
+	//查询id为2的客户
+	Customer customer = customerDao.getOne(2l);
+	//对象导航查询，此客户下的所有联系人
+	Set<LinkMan> linkMans = customer.getLinkMans();
+
+	for (LinkMan linkMan : linkMans) {
+		System.out.println(linkMan);
+	}
+}
+延迟加载发起的是两个sql语句
+SELECT 
+  customer0_.cust_id AS cust_id1_0_0_,
+  customer0_.cust_address AS cust_add2_0_0_,
+  customer0_.cust_industry AS cust_ind3_0_0_,
+  customer0_.cust_level AS cust_lev4_0_0_,
+  customer0_.cust_name AS cust_nam5_0_0_,
+  customer0_.cust_phone AS cust_pho6_0_0_,
+  customer0_.cust_source AS cust_sou7_0_0_ 
+FROM
+  cst_customer customer0_ 
+WHERE customer0_.cust_id = ?
+
+SELECT 
+  linkmans0_.lkm_cust_id AS lkm_cust9_1_0_,
+  linkmans0_.lkm_id AS lkm_id1_1_0_,
+  linkmans0_.lkm_id AS lkm_id1_1_1_,
+  linkmans0_.lkm_cust_id AS lkm_cust9_1_1_,
+  linkmans0_.lkm_email AS lkm_emai2_1_1_,
+  linkmans0_.lkm_gender AS lkm_gend3_1_1_,
+  linkmans0_.lkm_memo AS lkm_memo4_1_1_,
+  linkmans0_.lkm_mobile AS lkm_mobi5_1_1_,
+  linkmans0_.lkm_name AS lkm_name6_1_1_,
+  linkmans0_.lkm_phone AS lkm_phon7_1_1_,
+  linkmans0_.lkm_position AS lkm_posi8_1_1_ 
+FROM
+  cst_linkman linkmans0_ 
+WHERE linkmans0_.lkm_cust_id = ?
+
+也可以在实体类中配置fetch = FetchType.EARGE采用立即加载，立即加载发起一个sql语句
+SELECT 
+  customer0_.cust_id AS cust_id1_0_0_,
+  customer0_.cust_address AS cust_add2_0_0_,
+  customer0_.cust_industry AS cust_ind3_0_0_,
+  customer0_.cust_level AS cust_lev4_0_0_,
+  customer0_.cust_name AS cust_nam5_0_0_,
+  customer0_.cust_phone AS cust_pho6_0_0_,
+  customer0_.cust_source AS cust_sou7_0_0_,
+  linkmans1_.lkm_cust_id AS lkm_cust9_1_1_,
+  linkmans1_.lkm_id AS lkm_id1_1_1_,
+  linkmans1_.lkm_id AS lkm_id1_1_2_,
+  linkmans1_.lkm_cust_id AS lkm_cust9_1_2_,
+  linkmans1_.lkm_email AS lkm_emai2_1_2_,
+  linkmans1_.lkm_gender AS lkm_gend3_1_2_,
+  linkmans1_.lkm_memo AS lkm_memo4_1_2_,
+  linkmans1_.lkm_mobile AS lkm_mobi5_1_2_,
+  linkmans1_.lkm_name AS lkm_name6_1_2_,
+  linkmans1_.lkm_phone AS lkm_phon7_1_2_,
+  linkmans1_.lkm_position AS lkm_posi8_1_2_ 
+FROM
+  cst_customer customer0_ 
+  LEFT OUTER JOIN cst_linkman linkmans1_ 
+    ON customer0_.cust_id = linkmans1_.lkm_cust_id 
+WHERE customer0_.cust_id = ?
+
+我们知道getOne是延迟加载的，findOne是立即加载的，为了说明关联关系中一的一方默认是延迟加载的，我们使用findOne，发现依然是延迟加载的，依然是发起两次sql查询的。
+@Test
+@Transactional // 解决在java代码中的no session问题
+public void  testQuery2() {
+	//查询id为2的客户
+	Customer customer = customerDao.findOne(2l);
+	//对象导航查询，此客户下的所有联系人
+	Set<LinkMan> linkMans = customer.getLinkMans();
+
+	System.out.println(linkMans.size());
+}
+
+我们也可以在多的一方关联一的一方进行查询，SpringDataJpa在多的一方默认是立即加载的
+@Test
+@Transactional // 解决在java代码中的no session问题
+public void  testQuery3() {
+	LinkMan linkMan = linkManDao.findOne(2l);
+	//对象导航查询所属的客户
+	Customer customer = linkMan.getCustomer();
+	System.out.println(customer);
+}
+
+语句如下
+SELECT 
+  linkman0_.lkm_id AS lkm_id1_1_0_,
+  linkman0_.lkm_cust_id AS lkm_cust9_1_0_,
+  linkman0_.lkm_email AS lkm_emai2_1_0_,
+  linkman0_.lkm_gender AS lkm_gend3_1_0_,
+  linkman0_.lkm_memo AS lkm_memo4_1_0_,
+  linkman0_.lkm_mobile AS lkm_mobi5_1_0_,
+  linkman0_.lkm_name AS lkm_name6_1_0_,
+  linkman0_.lkm_phone AS lkm_phon7_1_0_,
+  linkman0_.lkm_position AS lkm_posi8_1_0_,
+  customer1_.cust_id AS cust_id1_0_1_,
+  customer1_.cust_address AS cust_add2_0_1_,
+  customer1_.cust_industry AS cust_ind3_0_1_,
+  customer1_.cust_level AS cust_lev4_0_1_,
+  customer1_.cust_name AS cust_nam5_0_1_,
+  customer1_.cust_phone AS cust_pho6_0_1_,
+  customer1_.cust_source AS cust_sou7_0_1_ 
+FROM
+  cst_linkman linkman0_ 
+  LEFT OUTER JOIN cst_customer customer1_ 
+    ON linkman0_.lkm_cust_id = customer1_.cust_id 
+WHERE linkman0_.lkm_id = ?
+
+
+SpringBoot
+
+spring缺点分析
+虽然Spring的组件代码是轻量级的，但它的配置却是重量级的。一开始，Spring用XML配置，而且是很多XML配置。
+Spring 2.5引入了基于注解的组件扫描，这消除了大量针对应用程序自身组件的显式XML配置。Spring 3.0引入了基于Java的配置，这是一种类型安全的可重构配置方式，可以代替XML。
+所有这些配置都代表了开发时的损耗。除此之外，项目的依赖管理也是一件耗时耗力的事情。在环境搭建时，需要分析要导入哪些库的坐标，
+而且还需要分析导入与之有依赖关系的其他库的坐标，一旦选错了依赖的版本，随之而来的不兼容问题就会严重阻碍项目的开发进度。
+
+SpringBoot解决上述Spring的缺点
+SpringBoot对上述Spring的缺点进行的改善和优化，基于约定优于配置的思想，可以让开发人员不必在配置与逻辑业务之间进行思维的切换，全身心的投入到逻辑业务的代码编写中，提高了工作效率。
+
+SpringBoot的特点
+为基于Spring的开发提供更快的入门体验
+开箱即用，没有代码生成，也无需XML配置。同时也可以修改默认值来满足特定的需求
+提供了一些大型项目中常见的非功能性特性，如嵌入式服务器、安全、指标，健康检测、外部配置等
+SpringBoot不是对Spring功能上的增强，而是提供了一种快速使用Spring的方式
+
+SpringBoot的核心功能
+起步依赖
+	起步依赖本质上是一个Maven项目对象模型（Project Object Model，POM），定义了对其他库的传递依赖，这些东西加在一起即支持某项功能。
+	简单的说，起步依赖就是将具备某种功能的坐标打包到一起，并提供一些默认的功能。
+自动配置
+	Spring Boot的自动配置是一个运行时（更准确地说，是应用程序启动时）的过程，考虑了众多因素，才决定Spring配置应该用哪个，不该用哪个。该过程是Spring自动完成的。
+
+	
+配置pom.xml
+
+SpringBoot要求，项目要继承SpringBoot的起步依赖spring-boot-starter-parent
+<parent>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-parent</artifactId>
+	<version>2.0.1.RELEASE</version>
+</parent>
+
+SpringBoot要集成SpringMVC进行Controller的开发，所以项目要导入web的启动依赖
+<dependencies>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-web</artifactId>
+	</dependency>
+</dependencies>
+
+编写SpringBoot引导类：要通过SpringBoot提供的引导类起步SpringBoot才可以进行访问
+package cn.figo;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+/**
+ * @Author Figo
+ * @Date 2020/1/12 15:07
+ */
+@SpringBootApplication
+public class MySpringBootApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(MySpringBootApplication.class);
+    }
+
+}
+
+热部署的依赖
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+</dependency>
+
+然后编写一个controller测试一下
+package cn.figo.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * @Author Figo
+ * @Date 2020/1/12 15:46
+ */
+@RestController
+public class QuickController {
+
+    @RequestMapping("/quick")
+    public String quick(){
+        return "Spring Boot";
+    }
+}
+
+spring-boot-starter-parent
+从上面的spring-boot-starter-parent的源码中我们可以发现，一部分坐标的版本、依赖管理、插件管理已经定义好，
+所以我们的SpringBoot工程继承spring-boot-starter-parent后已经具备版本锁定等配置了。所以起步依赖的作用就是进行依赖的传递。
+
+spring-boot-starter-web
+起步依赖spring-boot-starter-web中，到底有什么东西，看源码我们可以看到里面集合了一系列的web相关的依赖
+从上面的spring-boot-starter-web的pom.xml中我们可以发现，spring-boot-starter-web就是将web开发要使用的spring-web、spring-webmvc等坐标进行了“打包”，
+这样我们的工程只要引入spring-boot-starter-web起步依赖的坐标就可以进行web开发了，同样体现了依赖传递的作用。
+
+SpringBootApplication
+使用springboot的关键注解为：@SpringBootApplication
+我们看源码可以知道，其中集合了三个关键注解：SpringBootConfiguration、EnableAutoConfiguration、ComponentScan
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan(
+    excludeFilters = {@Filter(
+    type = FilterType.CUSTOM,
+    classes = {TypeExcludeFilter.class}
+), @Filter(
+    type = FilterType.CUSTOM,
+    classes = {AutoConfigurationExcludeFilter.class}
+)}
+)
+
+其中
+@SpringBootConfiguration：等同与@Configuration，既标注该类是Spring的一个配置类
+@EnableAutoConfiguration：SpringBoot自动配置功能开启，在EnableAutoConfiguration中我们可以看到AutoConfigurationImportSelector，打开可以看到
+protected List<String> getCandidateConfigurations(AnnotationMetadata metadata, AnnotationAttributes attributes) {
+	List<String> configurations = SpringFactoriesLoader.loadFactoryNames(this.getSpringFactoriesLoaderFactoryClass(), this.getBeanClassLoader());
+	Assert.notEmpty(configurations, "No auto configuration classes found in META-INF/spring.factories. If you are using a custom packaging, make sure that file is correct.");
+	return configurations;
+}
+在这个类的同包下，我们可以看到META-INF目录，该目录下有spring.factories、spring-configuration-metadata.json文件用于配置springboot的默认配置
+
+正因为有这些配置，我们可以在我们的项目的application.properties配置文件中修改这里的一些配置：
+比如修改默认端口为：8081
+server.port=8081
+修改当前web应用名称为：hello
+server.servlet.context-path=/hello
+
+
+springBoot配置文件
+SpringBoot是基于约定的，所以很多配置都有默认值，但如果想使用自己的配置替换默认配置的话，就可以使用application.properties或者application.yml（application.yaml）进行配置。
+SpringBoot默认会从Resources目录下加载application.properties或application.yml（application.yaml）文件
+其中，application.properties文件是键值对类型的文件，除了properties文件外，SpringBoot还可以使用yml文件进行配置。
+
+YML文件格式是YAML (YAML Aint Markup Language)编写的文件格式，YAML是一种直观的能够被电脑识别的的数据数据序列化格式，
+并且容易被人类阅读，容易和脚本语言交互的，可以被支持YAML库的不同的编程语言程序导入，比如： C/C++, Ruby, Python, Java, Perl, C#, PHP等。
+YML文件是以数据为核心的，比传统的xml方式更加简洁。YML文件的扩展名可以使用.yml或者.yaml。
+
+配置普通数据
+语法：
+	key: value
+name: zhangsan
+注意:和value之前有一个空格
+
+配置对象数据
+语法： 
+  ​	key: 
+  ​		key1: value1
+  ​		key2: value2
+或者：
+  ​	key: {key1: value1,key2: value2}
+比如：
+	person:
+		name: haohao
+		age: 31
+		addr: beijing
+或者
+	person: {name: haohao,age: 31,addr: beijing}
+
+我们在application.properties的配置可以改为application.yml的：
+server:
+  port: 8082
+  servlet:
+    context-path: /newName
+	
+#配置数据、集合（普通字符串）
+	city:
+	  - beijing
+	  - tianjin
+	  - chongqing
+	  - shanghai
+
+#或者行内配置
+	city: [beijing,tianjin,chongqing,shanghai]
+
+#配置数据、集合（对象数据）
+	student:
+	  - name: tom
+		age: 18
+		addr: beijing
+	  - name: lucy
+		age: 17
+		addr: tianjin
+
+#或者行内配置
+	student: [{name: tom,age: 18,addr: beijing},{name: lucy,age: 17,addr: tianjin}]
+
+#Map配置
+	map:
+	  key1: value1
+	  key2: value2
+	  
+
+java代码获取yaml配置文件中配置的数据
+
+使用@Value注解
+不需要getter和setter方法
+@Controller
+public class QuickValueController {
+    @Value("${name}")
+    private String name;
+
+    @Value("${person.addr}")
+    private String addr;
+
+    @RequestMapping("/quick2")
+    @ResponseBody
+    public String Quick() {
+        return "name:" + name + " addr:" + addr;
+    }
+}
+
+使用@ConfigurationProperties注解
+需要getter和setter方法
+@Controller
+@ConfigurationProperties(prefix = "person")
+public class QuickConfigurationPropertiesController {
+
+    private String name;
+    private Integer age;
+    private String addr;
+
+    @RequestMapping("/quick3")
+    @ResponseBody
+    public String Quick() {
+        return "name:" + name + " age:" + age + " addr:" + addr;
+    }
+}
+
+
+SpringBoot整合Mybatis
+
+mybatis起步依赖
+<dependency>
+    <groupId>org.mybatis.spring.boot</groupId>
+    <artifactId>mybatis-spring-boot-starter</artifactId>
+    <version>1.1.1</version>
+</dependency>
+
+添加数据库驱动坐标
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+</dependency>
+
+添加数据库连接信息（在application.properties）
+#DB Configuration:
+spring.datasource.driverClassName=com.mysql.jdbc.Driver
+spring.datasource.url=jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf8
+spring.datasource.username=root
+spring.datasource.password=root
+
+创建实体 domain.User
+在resources目录下创建UserMapper.xml
+创建持久化接口 mapper.UserMapper
+
+在application.properties配置
+pojo别名扫描包
+mybatis.type-aliases-package=cn.figo.domain
+加载Mybatis映射文件
+mybatis.mapper-locations=classpath:mapper/*Mapper.xml
+
+写controller类
+@Controller
+public class MybatisController {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @RequestMapping("/query")
+    @ResponseBody
+    public List<User> queryUserList(){
+        List<User> users = userMapper.queryUserList();
+        return users;
+    }
+
+}
+
+
+集成junit
+
+测试的起步依赖
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+
+测试
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = SpringbootCombineOtherApplication.class)
+public class MybatisTest {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Test
+    public void test(){
+        List<User> users = userMapper.queryUserList();
+        System.out.println(users);
+    }
+}
+
+
+集成SpringDataJpa
+springBoot JPA的起步依赖
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+
+jdk9需要导入如下坐标
+<dependency>
+	<groupId>javax.xml.bind</groupId>
+	<artifactId>jaxb-api</artifactId>
+	<version>2.3.0</version>
+</dependency>
+
+给实体类加jap注解
+添加jpa的持久化接口
+public interface UserRepository extends JpaRepository<User,Long> {
+
+    public List<User> findAll();
+
+}
+
+在spring配置文件中加jpa配置
+#JPA Configuration:
+spring.jpa.database=MySQL
+spring.jpa.show-sql=true
+spring.jpa.generate-ddl=true
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.naming_strategy=org.hibernate.cfg.ImprovedNamingStrategy
+
+然后测试
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = SpringbootCombineOtherApplication.class)
+public class JpaTest {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Test
+    public void test(){
+        List<User> all = userRepository.findAll();
+        System.out.println(all);
+    }
+}
+
+集成redis
+配置使用redis启动器
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+在spring配置文件中加redis配置
+#Redis
+spring.redis.host=127.0.0.1
+spring.redis.port=6379
+
+测试：
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = SpringbootCombineOtherApplication.class)
+public class RedisTest {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Test
+    public void test() throws JsonProcessingException {
+        //从redis缓存中获得指定的数据
+        String userListData = redisTemplate.boundValueOps("user.findAll").get();
+        //如果redis中没有数据的话
+        if(null==userListData){
+            //查询数据库获得数据
+            List<User> all = userRepository.findAll();
+            //转换成json格式字符串
+            ObjectMapper om = new ObjectMapper();
+            userListData = om.writeValueAsString(all);
+            //将数据存储到redis中，下次在查询直接从redis中获得数据，不用在查询数据库
+            redisTemplate.boundValueOps("user.findAll").set(userListData);
+            System.out.println("===============从数据库获得数据===============");
+        }else{
+            System.out.println("===============从redis缓存中获得数据===============");
+        }
+
+        System.out.println(userListData);
+
+    }
+}
+
+
+@SpringBootApplication //声明当前类是一个springBoot引导类,项目中只能有一个,是一个组合注解，其中有三个主要注解
+	@SpringBootConfiguration //声明当前类是SpringBoot应用的配置类，项目中只能有一个，它里面包含了Configuration注解
+		@Configuration
+	@EnableAutoConfiguration //开启自动配置
+	@ComponentScan //开启注解扫描
+	
+
+这里有一个配置文件：jdbc.properties，读取配置文件并注入spring容器
+jdbc.driverClassName=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://127.0.0.1:3306/leyou?useUnicode=true&characterEncoding=utf8
+jdbc.username=root
+jdbc.password=123456
+
+
+配置数据源
+
+1、使用PropertySource指定配置文件
+@Configuration //声明一个类作为配置类，代替xml文件
+@PropertySource //指定外部属性文件
+@Bean //声明在方法上，将方法的返回值加入Bean容器，代替<bean>标签
+@Value //为属性注入值
+
+@Configuration
+@PropertySource("classpath:jdbc.properties")
+public class JdbcConfiguration {
+
+    @Value("${jdbc.url}")
+    String url;
+    @Value("${jdbc.driverClassName}")
+    String driverClassName;
+    @Value("${jdbc.username}")
+    String username;
+    @Value("${jdbc.password}")
+    String password;
+
+    @Bean
+    public DataSource dataSource() {
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setUrl(url);
+        dataSource.setDriverClassName(driverClassName);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+        return dataSource;
+    }
+}
+因为使用@Bean将DataSource注入了spring容器，因此就可以在任意位置通过@Autowired注入DataSource了。
+
+2、SpringBoot的属性注入
+SpringBoot默认会读取文件名为application.properties的资源文件
+因此创建配置文件 application.properties
+jdbc.driverClassName=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://127.0.0.1:3306/leyou?useUnicode=true&characterEncoding=utf8
+jdbc.username=root
+jdbc.password=123456
+
+@ConfigurationProperties //声明当前类是属性读取类，prefix="jdbc"读取属性文件中，前缀为jdbc的值。
+在类上定义各个属性，名称必须与属性文件中`jdbc.`后面部分一致，并且必须具有getter和setter方法
+@ConfigurationProperties(prefix = "jdbc")
+public class JdbcProperties {
+    private String url;
+    private String driverClassName;
+    private String username;
+    private String password;
+    // getters 和 setters
+}
+
+然后就可以在JdbcConfiguration中使用JdbcProperties
+注解@EnableConfigurationProperties(JdbcProperties.class)来声明要使用JdbcProperties这个类的对象
+然后可以使用三种方式注入：@Autowired注入、构造函数注入、@Bean方法的参数注入
+
+2.1 @Autowired注入
+@Configuration
+@EnableConfigurationProperties(JdbcProperties.class)
+public class JdbcConfiguration {
+
+    @Autowired
+    private JdbcProperties jdbcProperties;
+
+    @Bean
+    public DataSource dataSource() {
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setUrl(jdbcProperties.getUrl());
+        dataSource.setDriverClassName(jdbcProperties.getDriverClassName());
+        dataSource.setUsername(jdbcProperties.getUsername());
+        dataSource.setPassword(jdbcProperties.getPassword());
+        return dataSource;
+    }
+
+}
+
+2.2 构造函数注入
+@Configuration
+@EnableConfigurationProperties(JdbcProperties.class)
+public class JdbcConfiguration {
+
+    private JdbcProperties jdbcProperties;
+
+    public JdbcConfiguration(JdbcProperties jdbcProperties){
+        this.jdbcProperties = jdbcProperties;
+    }
+
+    @Bean
+    public DataSource dataSource() {
+        // 略
+    }
+
+}
+
+2.3 @Bean方法的参数注入
+@Configuration
+@EnableConfigurationProperties(JdbcProperties.class)
+public class JdbcConfiguration {
+
+    @Bean
+    public DataSource dataSource(JdbcProperties jdbcProperties) {
+        // ...
+    }
+}
+
+3、在方法是使用@ConfigurationProperties
+如果一段属性只有一个Bean需要使用，我们无需将其注入到一个类（JdbcProperties）中。而是直接在需要的地方声明即可
+@Configuration
+public class JdbcConfiguration {
+    
+    @Bean
+    // 声明要注入的属性前缀，SpringBoot会自动把相关属性通过set方法注入到DataSource中
+    @ConfigurationProperties(prefix = "jdbc")
+    public DataSource dataSource() {
+        DruidDataSource dataSource = new DruidDataSource();
+        return dataSource;
+    }
+}
+我们直接把@ConfigurationProperties(prefix = "jdbc")声明在需要使用的@Bean的方法上，然后SpringBoot就会自动调用这个Bean（此处是DataSource）的set方法，然后完成注入。
+使用的前提是：该类必须有对应属性的set方法！
+
