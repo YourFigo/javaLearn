@@ -1,0 +1,3933 @@
+基本数据类型
+	整数型	byte short int long
+	浮点型	float double
+	字符型	char   48-->'0'  65-->'a'   97-->'A'
+	布尔型	boolean
+
+引用数据类型
+	字符串、数组、类、接口、Lambd
+	
+注意事项：
+1. 字符串不是基本类型，而是引用类型。
+2. 浮点型可能只是一个近似值，并非精确的值。
+3. 数据范围与字节数不一定相关，例如float数据范围比long更加广泛，但是float是4字节，long是8字节。
+4. 浮点数当中默认类型是double。如果一定要使用float类型，需要加上一个后缀F。
+   如果是整数，默认为int类型，如果一定要使用long类型，需要加上一个后缀L。推荐使用大写字母后缀。
+5. byte short int 可以发生数学运算，但会首先提升为int类型，然后再计算，因此计算结果应该进行强制类型转换为 byte short int
+6. boolean类型不能进行数据类型转换
+
+默认值：
+整型 0
+浮点型 0.0
+字符型 '\u0000'
+布尔型 false
+引用类型 null
+   
+
+常量：
+	字符串常量
+	整数常量
+	浮点数常量
+	字符常量
+	布尔常量
+	空常量 null
+
+变量名不能重复声明
+声明后的变量赋值后才能使用
+
+方法重载与下列因素有关：
+	参数个数
+	参数类型
+	参数的多类型顺序
+方法重载与下列因素无关：
+	参数的名称
+	方法的返回值类型
+
+可变参数：JDK1.5之后的 新特性
+	适用于：但方法的参数列表数据类型已经确定，但是参数个数不确定
+	使用方法：
+		修饰符 返回值类型 方法名(数据类型... 变量名)
+		public int add(int... arr){//...}
+	可变参数的底层是一个数组，根据传递参数个数的不同，会 创建不同长度的数组来存储这些参数，
+		传递的参数个数可以是0、1、2...多个	
+	注意事项：
+		一个方法的参数列表只能有一个可变参数
+		参数列中的可变参数应该在参数列表的末尾
+		public int add(String s,int... arr){//...}
+
+java内存划分
+	栈（stack）
+		局部变量：方法的参数，或者是方法{}内部的变量（方法的运行在栈中）
+		一旦超出作用域，立即从栈内存中消失
+	堆（heap）
+		凡是new出来的东西都在堆中
+		堆中的数据都有默认值
+		堆内存中的数据都有一个地址值：16位
+	方法区（method area）
+		存储.class相关信息，包括方法的信息
+	本地方法栈（Native method stack）：与操作系统有关
+	寄存器：与CPU有关
+
+idea快捷键：
+	sout：System.out.println()
+	main（或 psvm）：public static void main(String[] args)
+	array.for ：for each 语句
+	Alt+? 代码提示
+	Ctr+? 单行注释
+	Ctr+Shift+? 多行注释
+	Alt+Enter 代码语法错误解决
+	Alt+Insert 插入代码：setter getter等
+	End：光标移到行尾
+	Home：光标移到行首
+	Ctrl+Alt+L：格式化代码
+	Ctrl+]：快速跳转至诸如{}围起来的代码块的结尾处
+	Ctrl+[：快速跳转至诸如{}围起来的代码块的开头处
+	Ctrl+向左箭头：将光标移至前一个单词
+	Ctrl+向右箭头：将光标移至后一个单词
+	Ctrl+向上箭头：向上滚动一行
+	Ctrl+向下箭头：向下滚动一行
+	Ctrl+W：选中整个单词
+	Ctrl+Shift+U：切换大小写
+	ctrl+alt+v: 快速赋值
+idea的Debugger
+	f8:逐行执行程序
+	f7:进入方法中
+	shift+f8:跳出方法
+	f9:跳到下一个断点
+
+
+控制台输入：
+	Scanner scanner = new Scanner(System.in);
+	String str = scanner.next();
+	
+ArrayList
+	数组的缺点：创建后长度不可以改变，但ArrayList长度可以改变
+	import java.util.ArrayList;
+	// ArrayList有一个尖括号<>代表泛型，尖括号里是什么类型，就只能添加什么类型
+	// 泛型：也就是装在集合当中的所有元素，全都是统一的什么类型
+	// 泛型智能是引用类型，不能是基本类型
+	// ArrayList直接打印不是地址值，而是内容，因为经过toString()处理了
+	public class ArrayListTest {
+		public static void main(String[] args) {
+			/*
+			* add(E e) 向集合中添加元素，参数类型和泛型一致
+			* get(int index) 根据索引获得元素,索引从0开始
+			* remove(int index) 删除并返回被删除的元素
+			* size() 集合中元素的个数
+			* */
+			ArrayList<String> list = new ArrayList<>();
+			System.out.println(list);
+			list.add("赵丽颖");
+			list.add("古力娜扎");
+			list.add("马尔扎哈");
+			System.out.println(list);
+			int num = list.size();
+			System.out.println(num);
+			System.out.println(list.get(2));
+			System.out.println(list.remove(1));
+			System.out.println(list.get(1));
+			for (int i = 0; i < list.size(); i++) {
+				System.out.println(list.get(i));
+			}
+		}
+	}
+	 //基本类型如果要使用ArrayList，要使用相应的包装类
+        /*
+        * byte Byte
+        * short Short
+        * int Integer
+        * long Long
+        * float Float
+        * double Double
+        * char Character
+        * boolean Boolean
+        * */
+		//从JDK1.5开始，支持自动装箱（基本类型-->包装类），拆箱
+        ArrayList<Integer> list = new ArrayList<>();
+        list.add(499);
+        list.add(0);
+        System.out.println(list);
+	ArrayList作为参数和返回值
+	public static ArrayList<Integer> function1(ArrayList<Integer> list){
+        ArrayList<Integer> listNew = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i) % 2 == 0){
+                listNew.add(list.get(i));
+            }
+        }
+        return listNew;
+    }
+
+String类
+	java.lang.String
+	程序中所有的双引号的字符串，都是String类的对象，就算没有new照样也是
+	字符串的内容用不可变
+	//String的三种构造函数，底层是通过byte[]方式实现的
+        // 空内容的字符串
+        String str1 = new String();
+        System.out.println("第一个 " + str1);
+
+        char[] charArray = {'a','b','c'};
+        String str2 = new String(charArray);
+        System.out.println("第二个 " + str2);
+
+        byte[] byteArray = {97,98,99};
+        String str3 = new String(byteArray);
+        System.out.println("第三个 " + str3);
+        //直接创建
+        String str4 = "hello";
+        System.out.println(str4);
+	//字符串常量池：直接双引号创建的字符串就在字符串常量池中,但new出来的不在字符串常量池
+        str1 = "abc";
+        str2 = "abc";
+        char[] charArray1 = {'a','b','c'};
+        str3 = new String(charArray1);
+        System.out.println(str1 == str2); //true
+        System.out.println(str1 == str3); //false
+        System.out.println(str2 == str3); //false
+	对于引用类型来说，==进行的地址值得比较
+	对内容进行比较
+		//public boolean equals(Object anObject)
+		System.out.println(str1.equals(str3)); //true
+		String str4 = null;
+		str4.equals("abc");//报错，空指针异常
+		推荐使用 "abc".equals(str4);
+		//忽略大小写比较内容
+		System.out.println("ABc".equalsIgnoreCase("abc")); //true
+	字符串获取的相关方法：
+		public int length() //字符串长度
+		public String concat(String str) // 将当前字符串和str拼接
+		public char charAt(int index) //获得指定索引index位置的单个字符
+		public int indexOf(String str) // 查找str在当前字符串中首次出现出现的位置，如果没有返回-1
+	字符串截取：
+		public String substring(int beginIndex)  //默认取到结尾
+		public String substring(int beginIndex, int endIndex) //指定开头结尾 左闭右开[begin,end)
+	字符串转换：
+		将当前字符串拆分为字符数组作为返回值
+			public char[] toCharArray()
+		获得当前字符串底层的字节数组
+			public byte[] getBytes()
+		将所有出现的老字符串替换为新字符串(old,new)
+			public String replace(CharSequence target, CharSequence replacement)
+			"how do you do".replace("do","**"); 
+	字符串切割
+		//public String[] split(String regex)
+		String str5 = "aaa,bbb,ccc";
+        String[] array = str5.split(",");
+		split方法的参数其实是一个正则表达式，如果按照英文句点"."来切分，需要使用"\\."
+
+static
+	如果一个成员变量使用了static关键字，那么该变量就不再属于对象自己，而是属于所在的类
+		static String room;
+	如果一个成员方法使用了static关键字，那么该方法就变成了类方法，使用类名称访问（也可以使用对象访问，不推荐）
+		static static void methodStatic()
+		成员方法可以访问成员变量和静态变量
+		但静态方法不能直接访问非静态变量，因为内存中先有的静态内容，后有的非静态内容
+		静态方法中不能使用this关键字
+	静态代码块
+		static {//内容}
+		当第一次使用到本类时，静态代码块只执行唯一的一次
+		静态内容总是优先于非静态，所以静态代码块比构造函数先执行
+		用途：用来一次性地对静态成员变量进行赋值
+
+Arrays 数组工具类
+	// java.util.Arrays 里面提供了大量的静态方法。用来实现数组的相关操作，是一个与数组相关的工具类
+	public static String toString(int[] a)
+		将参数数组编程字符串，返回默认格式 [元素1,元素2 ...]
+	public static void sort(int[] a)
+		按照默认升序对数组进行排序
+	
+Math 工具类
+	java.lang.Math 里面提供了大量的静态方法，完成数学相关运算
+	向上取整：
+		Math.ceil(11.3)的值是12 ; Math.ceil.(-11.6)的结果是-11;
+	向下取整：
+		Math.floor(11.6)的结果就是11 ;Math.floor(-11.4);的结果就是-12
+	四舍五入：
+		Math.round(11.5);也就是 Math.floor(11.5+0.5)= Math.floor(12)=12;
+		同理: Math.round(-11.5)= Math.floor(-11.5+0.5)=Math.floor(-11.0)= -11;
+		
+继承解决的主要问题是 共性抽取
+	关键字
+		extends
+		this
+			访问本类中内容：this.成员变量 this.成员方法  本类构造方法 this()
+			本类构造函数中的 this()方法只能有一个，并且只能在本类构造方法的第一句
+			两个构造方法 this() super() 不能同时使用，因为都要求在调用的方法中的第一行
+		super
+			访问父类中的内容：super.成员变量 super.成员方法  父类构造方法super()
+	当遇到子类中没有的变量和方法时，子类对象会向上在父类中查找，但父类不会向下找子类
+	重写： @Override(注解)
+		方法名相同，参数列表也相同
+		子类方法的返回值类型的范围必须小于、等于父类方法中返回值类型的范围
+			比如，父类的返回值类型是Object，子类可以是Object也可以是String
+			但如果父类的返回值类型是String，那么子类的返回值类型不能是Object
+		子类方法的权限必须 大于、等于 父类方法中的权限
+			public > protected > (default) > private
+	构造方法
+		不需要返回值类型，名字与类名相同
+		对于无参构造方法，编译器会在子类的无参构造方法中自动添加 super() 父类无参构造方法
+		子类中super()方法只能有一个，并且只能在子类构造方法的第一句
+	继承的特点：
+		单继承：一个子类只能来源于一个父类
+		可以多级继承
+		一个父类可以有多个子类
+
+abstract
+	抽象类中可以有构造方法，供子类初始化时对父类的成员进行初始化
+	抽象方法所在的类必须是抽象类,抽象类中不一定有抽象方法
+	不能直接new抽象对象（怎么创建一个动物呢，到底是创建狗呢，还是猫呢）
+	必须用一个子类来继承抽象父类
+	子类必须覆盖重写抽象父类的所有抽象方法
+	如果子类没有重写抽象父类的所有抽象方法，那么需要把该子类也定义为一个抽象类
+		public abstract class Animal {
+			public abstract void eat();
+			public abstract void sleep();
+		}
+		
+		public abstract class Dog extends Animal {
+			@Override
+			public void sleep(){}
+		}
+		
+		public class DogGlod extends Dog {
+			@Override
+			public void eat() {
+			}
+		}
+
+interface
+	java7，接口中可以有
+		1. 常量
+		2. 抽象方法
+	java8中，还可以额外有
+		3. 默认方法：解决接口升级问题
+		4. 静态方法
+	java9中还可以有
+		5. 私有方法
+	
+	接口中也可以定义"成员变量" 但必须用 public static final 三个关键字来修饰，相对于是接口常量
+		[public] [static] [final] 常量名称 = 数据值;
+		接口中的常量必须进行手动赋值，一旦赋值，不可以修改
+		常量名 要全大写，用下划线分割
+	
+	接口当中的抽象方法的修饰符必须是 public abstract，省略掉也是如此
+		[public] [abstract] 返回值类型 方法名(参数){//方法体}
+	接口不能 直接使用 new，必须有一个实现类来实现该接口 implements
+	接口的实现类必须覆盖重写（实现）接口中的所有抽象方法
+	实现类中只要没有实现接口中的任意一个抽象方法，那这个实现类必须时 abstract类
+	
+	java8
+		默认方法：
+			在接口中新添加的方法，在实现类中不强制要求实现
+				[public] default 返回值类型 方法名(参数){//方法体}
+			如果实现类中没有重写接口的default方法，实现类的对象调用该方法时，会向上到接口中的default去找
+		静态方法：
+			[public] static 返回值类型 方法名(参数){//方法体}
+			不能通过接口实现类的对象来调用接口中的静态方法，需要 接口名称.静态方法名() 来调用
+	
+	java9
+		私有方法：
+			通过定义一个方法来解决两个或多个默认方法中的重复代码问题，但这个方法不应该让实现类使用
+			因此要设置权限为 private ，默认方法必须是 public
+			普通私有方法： 解决多个默认方法之间的代码重复
+				private 返回值类型 方法名(参数列表){//方法体}
+			静态私有方法： 解决多个静态方法 之间的代码重复
+				private static 返回值类型 方法名(参数列表){//方法体}
+		
+	注意事项：
+		1. private 方法只能接口自己使用，实现类和其他类不能使用
+		2. 接口不能有构造方法
+		3. 一个类可以同时实现多个接口
+			public class ClassName implements InterfaceA,InterfaceB{}
+		4. 如果实现类中实现的多个接口中的抽象方法名有重复，只覆盖重写一个就行
+		5. 如果实现类没有实现所有接口的所有抽象类，那么该实现类必须是abstract类
+		6. 如果实现类中实现的多个接口中，存在同名的默认方法，那么实现类一定要对冲突的默认类进行覆盖重写
+		7. 一个类如果直接父类中的方法和接口中的方法冲突，那么优先使用父类中的方法
+		
+	类与类是单继承的
+	类与接口是多实现的
+	接口与接口是多继承的
+		多个父接口中的抽象方法冲突也没关系，因为没有方法体
+		多个父接口中的默认方法冲突，那么子接口必须覆盖重写默认方法，而且带着default关键字
+
+多态  =号 左父右子
+	用父类对象指向多种子类对象
+		父类 对象 = new  子类();
+		接口 对象 = new 实现类();
+	extends继承和implements实现是多态的前提
+	成员变量不能覆盖重写，成员方法才能覆盖重写，
+		因此通过对象名访问方法看等号右边，通过对象名访问成员变量看等号左边，没有都会向上查找
+	向上转型一定是安全的，但向上转型后，父类对象就不能访问子类特有对象了。（编译看左，运行看右）
+		父类 对象 = new  子类();
+		父类引用指向子类对象
+	向下转型
+		子类 对象名 = (子类)父类对象;
+		对于本来就是该子类的父类对象，向下转型才不会发生问题，这样其实是将父类对象还原为本来的子类对象
+		对于上转型后的对象无法访问子类特有的方法，那么可以下转型为原来的子类来访问该子类的特有方法
+			如果还原的不是原本new出来的子类，那么会报异常 java.lang.ClassCastException
+	instanceof
+		对象 instanceof 类型
+		对于 Animal类和Dog类
+		Animal animal = new Dog();
+		if (animal instanceof Dog){
+			Dog dog = (Dog) animal;
+		}
+面向对象的例子
+	//USB接口
+	public interface USB {
+		public abstract void open();
+		public abstract void close();
+	}
+	//USB接口的实现类
+	public class Mouse implements USB {
+
+		@Override
+		public void open() {
+			System.out.println("打开鼠标");
+		}
+
+		@Override
+		public void close() {
+			System.out.println("关闭鼠标");
+		}
+
+		public void click(){
+			System.out.println("点击鼠标");
+		}
+	}
+	//USB接口的实现类
+	public class Keyboard implements USB {
+
+		@Override
+		public void open() {
+			System.out.println("打开键盘");
+		}
+
+		@Override
+		public void close() {
+			System.out.println("关闭键盘");
+		}
+
+		public void type(){
+			System.out.println("键盘输入");
+		}
+	}
+	//Computer类用到了上下转型
+	public class Computer {
+		public void powerOn(){
+			System.out.println("笔记本电脑开机");
+		}
+		public void powerOff(){
+			System.out.println("笔记本电脑关机");
+		}
+		public void useDevice(USB usb){
+			usb.open();
+			if (usb instanceof Mouse){
+				Mouse mouse = (Mouse) usb;
+				mouse.click();
+			}else if (usb instanceof Keyboard){
+				Keyboard keyboard = (Keyboard) usb;
+				keyboard.type();
+			}
+			usb.close();
+		}
+	}
+	//主类看输出
+	public class Main {
+		public static void main(String[] args) {
+			Computer  computer = new Computer();
+			computer.powerOn();
+
+			USB usbMouse = new Mouse();
+			computer.useDevice(usbMouse);
+
+			Keyboard keyboard = new Keyboard();
+			computer.useDevice(keyboard);
+
+			computer.powerOff();
+		}
+	}
+
+final
+	修饰一个类
+		public final class 类名{//类内容}
+		不能有任何子类，是一个太监类，所有成员方法也不能被Override
+	修饰一个方法
+		修饰符 final 返回值类型 方法名称(参数列表){//方法体}
+		子类不能Override父类中的final方法
+		abstract 和 final自相矛盾，不能同时出现，一个要求Override，一个不能被Override
+	修饰一个局部变量
+		用final修饰的变量，赋值后不能被改变
+		对于基本类型变量来说，不能变指的是变量的值不能变
+		对于引用类型变量来说，不能变指的是变量的地址值不能变，只要地址值不变，指向的内容变不变都可以
+	修饰一个成员变量
+		用了final之后，必须手动赋值，因为final后就不会再给默认值了
+		用了final的成员变量，要么直接赋值，要么通过构造方法赋值
+
+权限修饰符
+						public     protected     (default)    private
+	同一个类			YES			YES				YES			YES
+	同一个包			YES			YES				YES			NO
+	同一个包父子类		YES			YES				NO			NO
+	不同包非父子类		YES			NO				NO			NO
+
+
+内部类
+	1.成员内部类：内用外，随意访问；外用内，需要内部类对象
+		修饰符 class 外部类名{
+			修饰符 class 内部类名{
+			//...
+				}
+		}
+		如何使用 成员内部类
+			1. 间接方式： 在外部类方法中，new内部类然后使用内部类相关方法，然后在main中调用外部类方法
+			2. 直接方式： 外部类名.内部类名 对象名 = new 外部类名().new 内部类名();
+		同名变量访问
+			在内部类中访问同名的外部类的成员变量：外部类名.this.外部类的成员变量名
+	2. 局部内部类
+		一个类定义在一个外部类的方法的内部，只有当前所属方法能够使用
+		修饰符 class 外部类名{
+			修饰符 返回值类型 外部类方法名(参数列表){
+				class 局部内部类名{
+					//...
+				}
+			}
+		}
+		局部内部类，如果希望访问所在方法的局部变量，那么这个局部变量必须是 有效final的
+		原因： 因为内部类的生命周期要大于局部变量
+			a. new出来的对象在堆内存中
+			b. 局部变量跟着方法走，在栈内存中
+			c. 方法运行结束之后，立刻出站，局部变量消失
+			d. 但是new出来的对象会在堆中持续存在，直到垃圾回收消失
+	3.可以使用的权限修饰符
+		1. 外部类： public / (default)
+		2. 成员内部类：public / protected / (default) / private
+		3. 局部内部类：什么都不能写
+	4. 匿名内部类是局部内部类的一种
+		如果接口的实现类（或者是分类的子类）只需要使用唯一的一次，那么就可以省略该类的定义，改用匿名内部类
+		匿名内部类的定义： 接口名称 对象名 = new 接口名称(){//覆盖重写所有抽象方法};
+			上面的定义只省略了内部类的方法名，知识匿名了类名，并没有省略了对象名
+		匿名内部类的注意事项：
+			1.匿名内部类，在创建对象的时候，只能使用唯一的一次。 
+			2. 匿名对象指的是，连对象名都省略了，只能调用一次方法，因为这个对象都没有名字
+	类作为成员变量类型： private Myclass c ;
+	接口作为成员变量类型 
+	接口作为方法的参数和返回值
+
+Object
+	public String toString() 返回对象的字符串表示形式，重写该方法后，可以改变当前类打印出来的样式。
+	public boolean equals(Object obj) 如果此对象与obj参数相同则返回true
+		自反性 ：对于任何非空的参考值x ， x.equals(x)应该返回true 。 
+		对称性 ：对于任何非空引用值x和y ， x.equals(y)应该返回true当且仅当y.equals(x)返回true 。 
+		传递性 ：对于任何非空引用值x ， y和z ，如果x.equals(y)返回true，y.equals(z)返回true ，那么x.equals(z)应该返回true 。 
+		对于任何非空的x ， x.equals(null)应该返回false 。 
+
+集合 Collection
+	int size() 返回此集合中的元素数。
+	boolean isEmpty() 如果此集合不包含元素，则返回 true 。
+	boolean contains(Object o) 如果此集合包含指定的元素，则返回true 。
+	Object[] toArray() 返回一个包含此集合中所有元素的数组。
+	boolean add(E e) 添加元素成功则返回true 。
+	boolean remove(Object o) 从该集合中删除指定元素的单个实例
+	
+迭代器 Interface Iterator<E>
+	boolean hasNext() 如果迭代具有下一个的元素，则返回true 
+	E next() 返回迭代中的下一个元素。 
+	例子：
+		Collection<String> coll = new ArrayList<>();
+		coll.add("张三");
+		coll.add("李四");
+		coll.add("王五");
+		Iterator<String> it = coll.iterator();
+		boolean b = it.hasNext();
+		System.out.println(b);
+		String s = it.next();
+		System.out.println(s);
+		while (it.hasNext()){
+				String str = it.next();
+				System.out.println(str);
+		}
+
+泛型
+	定义含有泛型的类
+		public class Pair<T> {
+			private T first;
+			private T last;
+			public Pair(T first, T last) {
+				this.first = first;
+				this.last = last;
+			}
+			public T getFirst() {
+				return first;
+			}
+			public T getLast() {
+				return last;
+			}
+		}
+	定义含有泛型的方法
+		public <M> void method(M m){
+			System.out.println(m);
+		}
+	定义含有泛型的接口
+		public interface InterfaceTest<I>{
+			public abstract void method(I i);
+		}
+
+List接口
+	1.有序的结合，存储元素和取出元素的顺序是一致的
+	2.有索引，操作索引时，要防止索引越界 IndexOutOfBoundsException
+	3.允许存储重复元素
+	常用方法：
+		void add([索引值],E 待添加元素)
+		E remove(索引值) 返回被移除元素
+		E set(索引值,E 元素值) 将指定索引的元素替换成新元素
+		E get(索引值) 返回指定索引的元素
+	ArrayList是List的数组实现类:查询快，增删慢
+	LinkedList是List的链表实现类：查询慢，增删快
+		addFirst()
+		addLast()
+		push() 和 addFirst() 相同
+		getFirst()
+		getLast()
+		removeFirst()
+		removeLast()
+		pop() 和 removeFirst()相同
+
+Set 接口
+	1.不允许存储重复元素
+	2.没有索引，没有带索引的方法，也不能使用普通for循环
+	HashSet 实现了Set接口
+		是无序集合，存储和取出的顺序可能不一样
+		底层是一个哈希表结构，查询速度非常快
+		哈希值：
+			是一个十进制的 整数，有系统随机给出（就是对象的地址值，是一个模拟出来的逻辑地址，不是物理地址）
+			在Object类中有一个方法，可以回去对象的哈希值 hashCode()
+		哈希表：
+			jdk1.8之前：哈希表=数组+链表
+			jdk1.8之后：哈希表=数组+链表/红黑树
+			其中的数组用于存储元素的哈希值，其中相同哈希值得元素是一组，用链表/红黑树将相同哈希值
+			的元素连接在一起，其实相同哈希值又叫做哈希冲突（元素不同，但哈希值相同），如果链表中
+			相同的元素超过了8个，那么就将链表变为红黑树，加快 查询速度。
+				二叉树：分支不能超过两个
+				平衡树：左孩子和有孩子数量相等
+				不平衡树：左孩子和有孩子数量不相等
+				排序树/查找树： 在二叉树基础上，左子树小，右子树大
+				红黑树：趋近于平衡树，查询速度快，查询叶子节点的最大次数和最小次数不能超过两倍
+					根节点是黑色的
+					叶子节点是黑色的
+					每个红色节点的子节点都是黑色的
+					任何一个节点到其每个叶子节点的所有路径上的黑色节点相同
+		HashSet是如何去除重复元素的：hashset.add(s) 会调用s的hashCode方法和equals方法，判断元素是否重复
+			HashSet的add方法先调用s的hashCode方法，计算s的哈希值，然后在该集合中查找有没有相同哈希值的元素
+			如果没有，就把s元素 存储到集合中；如果有(哈希冲突)，就会调用equals方法进行比较，如果
+			s1.equals(s2)为ture，就认定两个元素相同，就不会把s2存储到集合中；如果为false，就把s2存储到集合中。
+		HashSet存储自定义类型的元素，要重写 hashCode 和 equals 方法		
+			import java.util.Objects;
+			public class Person {
+				private String name;
+				private int age;
+
+				public Person() {
+				}
+
+				public Person(String name, int age) {
+					this.name = name;
+					this.age = age;
+				}
+
+				@Override
+				public boolean equals(Object o) {
+					if (this == o) return true;
+					if (o == null || getClass() != o.getClass()) return false;
+					Person person = (Person) o;
+					return age == person.age &&
+							Objects.equals(name, person.name);
+				}
+
+				@Override
+				public int hashCode() {
+					return Objects.hash(name, age);
+				}
+
+				@Override
+				public String toString() {
+					return "Person{" +
+							"name='" + name + '\'' +
+							", age=" + age +
+							'}';
+				}
+
+				public String getName() {
+					return name;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public int getAge() {
+					return age;
+				}
+
+				public void setAge(int age) {
+					this.age = age;
+				}
+			}
+	LinkedHashSet 是有序的HashSet
+		继承了HashSet，底层是哈希表(数组+链表/红黑树)+链表，多了一个链表用于存储元素顺序
+		所以LinkedHashSet 是有序的不允许重复的
+
+Collections 集合工具类
+	addAll(List<T> list,t1,t2,tn) 向集合中添加多个元素  shuffle(List<T> list) 打乱集合中的元素
+		import java.util.Collections;
+		ArrayList<String> list = new ArrayList<>();
+		Collections.addAll(list,"www",".baidu",".com"," good");
+		System.out.println(list);
+		Collections.shuffle(list);
+	sort() 按默认顺序排序集合中的元素，
+		sort(List<T> list) T需要实现Comparable接口，重写compareTo()方法
+			Collections.sort(list);
+			例如 Person 实现Compareable接口
+				public class Person implements Comparable<Person>{
+					private String name;
+					private int age;
+					public int getAge() {
+					return age;
+					}
+					@Override
+					public int compareTo(Person o) {
+						return this.getAge() - o.getAge(); //按年龄升序排序
+						//return 0; //默认0认为元素都是相同的
+					}
+				}
+		sort(List<T> list,Comparator<? super T>) 将集合中的元素按照指定规则排序，Comparator相对于是排序方式
+			上下限受限泛型：
+				<? extends T> 此时的泛型必须是T或T的子类
+				<? extends T> 此时的泛型必须是T或T的父类
+			例子：
+				ArrayList<Integer> list1 = new ArrayList<>();
+				Collections.addAll(list1,4,2,5,1);
+				Collections.sort(list1, new Comparator<Integer>() {
+					@Override
+					public int compare(Integer o1, Integer o2) {
+						//return o1-o2; //升序
+						return o2-o1; //降序
+					}
+				});
+
+Map<K,V> 接口 	
+	key不允许重复，value可以重复
+	Map.Entry<K,V>
+		在Map接口中有一个内部接口Entry，Map集合一创建，就会生成Entry对象，用来记录键与值得映射关系（相对于结婚证）
+		Entry中有两个方法 getKey() getValue() 用于获取 键 和 值
+	常用方法：
+		V put(K key,V value) 向Map中添加key-value，key存在返回null，key存在则覆盖原有value
+		V get(K key) 获取指定key的value，不存在返回null
+		V remove(K key) 删除指定key的键值对，返回value
+		boolean containsKey(Object key) 判断集合中是否包含指定的key
+		Set<K> keySet() 从Map中得到key的集合
+		Set<Map.Entry<K,V>>  entrySet() 从Map集合中取出多个Entry对象
+		
+	遍历：
+		第一种：
+			Map<String,String> map  = new HashMap<>();
+			map.put("李晨","范冰冰");
+			map.put("小明","小红");
+			map.put("来来来","哈哈哈");
+			for (String key : map.keySet()){
+				System.out.println(key + "=" + map.get(key));
+			}
+		第二种：
+			for(Map.Entry<String, String> entry : map.entrySet()){
+				System.out.println(entry.getKey() + " " + entry.getValue());
+			}
+			
+	常用实现类：
+		HashMap<K,V> implements Map<K,V>
+			底层是哈希表(数组+链表/红黑树)，是无序的
+			HashMap存储自定义类型的元素作为key，要重写 hashCode 和 equals 方法
+		LinkedHashMap<K,V> extends HashMap<K,V>
+			底层是哈希表(数组+链表/红黑树)+链表，，是有序的，多了一个链表用于存储元素顺序
+			LinkedHashMap<String,String> linked = new LinkedHashMap<>();
+
+JDK9中，List、Set、Map中可以使用静态方法of()，可以给集合一次性添加多个元素
+	static <E> list<E> of(E... elements)
+	使用前提：
+		of方法只适用于三个接口，不适用于相应实现类
+		of方法返回值是一个不能变的集合，就不能再使用add、put等方法，否则报不支持操作异常
+		of方法适合存储前元素的个数已经确定的情况
+		Set和Map接口中调用of方法，不能有重复元素，否则报非法参数异常异常
+
+异常：
+	Throwable是异常体系的根，它继承自Object。Throwable有两个体系：Error和Exception，Error表示严重的错误，程序对此一般无能为力，例如：
+		OutOfMemoryError：内存耗尽
+		NoClassDefFoundError：无法加载某个Class
+		StackOverflowError：栈溢出
+	而Exception则是运行时的错误，它可以被捕获并处理。
+	某些异常是应用程序逻辑处理的一部分，应该捕获并处理。例如：
+		NumberFormatException：数值类型的格式错误
+		FileNotFoundException：未找到文件
+		SocketException：读取网络失败
+	还有一些异常是程序逻辑编写不对造成的，应该修复程序本身。例如：
+		NullPointerException：对某个null的对象调用方法或字段
+		IndexOutOfBoundsException：数组索引越界
+	Exception又分为两大类：
+		RuntimeException以及它的子类；
+		非RuntimeException（包括IOException、ReflectiveOperationException等等）	
+	所有异常都可以调用printStackTrace()方法打印异常栈，这是一个简单有用的快速打印异常的方法。
+	
+	多catch语句
+		多个catch语句只有一个能被执行
+		子类异常应该放在父类异常的前面，以免前面的父类异常就后面的子类异常屏蔽掉
+	finally语句保证了有无异常都会执行，它是可选的。假如在函数中，return语句尽量不要写在finally中
+	使用try ... catch ... finally
+		public static void main(String[] args) {
+			try {
+				process1();
+				process2();
+				process3();
+			} catch (UnsupportedEncodingException e) {
+				System.out.println("Bad encoding");
+			} catch (IOException e) {
+				System.out.println("IO error");
+			} finally {
+				System.out.println("END");
+			}
+		}
+	自定义异常
+		public class MyException extends Exception {
+			public MyException() {
+			}
+
+			public MyException(String message) {
+				super(message);
+			}
+		}
+
+多线程：
+	并发： 两个或多个任务在同一时间段内发生，本质是交替执行
+	并行： 两个无多个任务在同一时刻发生，本质是同时执行
+	进程： 每开启一个应用程序就在内存中生成了一个进程
+	线程： 属于进程的一个执行单元
+	单核心单线程： cpu在多个线程之间做高速切换，轮流执行多个线程，同一时刻只能执行1个线程
+	4核8线程：可以同时执行8个线程，8个线程在多个任务之间高速切换，可以同时运行8个线程
+	线程调度：
+		分时调度：所有线程轮流使用cpu，cpu随机执行线程
+		抢占式调度：优先让优先级高的线程使用cpu，优先级相同的随机执行
+	
+	java程序属于抢占式调度方式
+	主线程：执行主(main)方法的线程，从main方法从上到下依次执行
+	创建多线程：
+		第一种：
+			1 创建Thread类的子类
+			2 在该子类中重写Thread中的run()方法
+			3 创建Thread类的子类的对象
+			4 调用该子类对象的start()方法来调用run()开启新线程
+			5 结果就是两个线程并发执行，mian线程和新run的线程。
+			例子：
+				public class MyThread extends Thread{
+					@Override
+					public void run() {
+					//方法体	
+					}
+				}
+				然后在main方法中
+				MyThread mt  = new MyThread();
+				mt.start();
+		第二种：
+			1 创建一个Runnable的实现类
+			2 重写Runnable接口的run()方法
+			3 创键Runnable实现类的对象
+			4 创键Thread类对象，在该对象的构造方法中传递Runnable实现类的对象
+			5 调用Thread类中的start()方法，开启新线程
+			例子：
+				public class RunnableImpl implements Runnable{
+					public void run(){//...}
+				}
+				然后在main方法中
+				RunnableImpl run = new RunnableImpl();
+				Thread t = new Thread(run);
+				t.start();
+		使用匿名内部类来实现线程创建：
+			new Thread(new Runnable(){// run(){//...}}).start();
+			
+		实现Runnable接口创建多线程的好处：
+			避免了单继承的局限性，因为接口可以多实现，实现一个接口后还可以实现其他接口，也可以继承另外一个类
+			增强了程序的扩展性，降低了耦合性（解耦）：把设置线程任务和开启新线程两步进行了分离（解耦）
+		
+		Thread类中的方法：
+			1 String getName() 返回该线程的名字
+			2 static Thread currentThread() 返回当前的线程对象
+				System.out.println(Thread.currentThread().getName());
+			3 sleep(毫秒数)  对线程睡眠一段时间
+	
+	线程安全：
+		线程安全问题都是由全局变量及静态变量引起的。若每个线程中对全局变量、静态变量只有读操作，而无写操作，一般来说，这个全局变量是线程安全的；
+		若有多个线程同时执行写操作，一般都需要考虑线程同步，否则的话就可能影响线程安全。
+			定义一个卖票的Runnable实现类，让多线程同时卖出100张票
+			public class RunnableImplError implements Runnable{
+				//定义一个多个线程共享的票源
+				private  int ticket = 100;
+				//设置线程任务:卖票
+				@Override
+				public void run() {
+					//使用死循环,让卖票操作重复执行
+					while(true){
+						//先判断票是否存在
+						if(ticket>0){
+							//提高安全问题出现的概率,让程序睡眠
+							try {
+								Thread.sleep(10);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+
+							//票存在,卖票 ticket--
+							System.out.println(Thread.currentThread().getName()+"-->正在卖第"+ticket+"张票");
+							ticket--;
+						}
+					}
+				}
+			}
+			然后在主方法中执行，创建3个线程同时卖票
+			public class TicketMain {
+				public static void main(String[] args) {
+					//创建Runnable接口的实现类对象
+					RunnableImplError run = new RunnableImplError();
+					//创建Thread类对象,构造方法中传递Runnable接口的实现类对象
+					Thread t0 = new Thread(run);
+					Thread t1 = new Thread(run);
+					Thread t2 = new Thread(run);
+					//调用start方法开启多线程
+					t0.start();
+					t1.start();
+					t2.start();
+				}
+			}
+			结果就是同一张票会在不同的线程同时执行，这样显然是不行的
+			Thread-2-->正在卖第100张票
+			Thread-1-->正在卖第100张票
+			Thread-0-->正在卖第100张票
+			Thread-1-->正在卖第97张票
+			Thread-0-->正在卖第97张票
+		解决方法：
+		1、同步代码块： synchronized 关键字可以用于方法中的某个区块中，表示只对这个区块的资源实行互斥访问。
+		格式:
+			synchronized(锁对象){
+				可能会出现线程安全问题的代码(访问了共享数据的代码)
+			}
+		注意:
+			1.通过代码块中的锁对象,可以使用任意的对象
+			2.但是必须保证多个线程使用的锁对象是同一个
+			3.锁对象作用:
+				把同步代码块锁住,只让一个线程在同步代码块中执行
+			public class RunnableImpl implements Runnable{
+				//定义一个多个线程共享的票源
+				private  int ticket = 100;
+
+				//创建一个锁对象
+				Object obj = new Object();
+
+				//设置线程任务:卖票
+				@Override
+				public void run() {
+					//使用死循环,让卖票操作重复执行
+					while(true){
+					   //同步代码块
+						synchronized (obj){
+							//先判断票是否存在
+							if(ticket>0){
+								//提高安全问题出现的概率,让程序睡眠
+								try {
+									Thread.sleep(10);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+
+								//票存在,卖票 ticket--
+								System.out.println(Thread.currentThread().getName()+"-->正在卖第"+ticket+"张票");
+								ticket--;
+							}
+						}
+					}
+				}
+			}
+			这样把共享资源的操作放在synchronized代码块中，就可以避免上面的问题，可以保证一张票只卖一次
+			Thread-2-->正在卖第100张票
+			Thread-1-->正在卖第100张票
+			Thread-0-->正在卖第100张票
+			Thread-1-->正在卖第97张票
+			Thread-0-->正在卖第97张票
+		2、同步方法:使用synchronized修饰的方法,就叫做同步方法,保证A线程执行该方法的时候,其他线程只能在方法外等着。
+			格式：
+				public synchronized void method(){
+					可能会产生线程安全问题的代码
+				}
+			还是这个例子，将synchronized代码块封装到一个函数中，同步锁是谁？
+				对于非 static方法同步锁就是this对象
+				static方法我们使用当前方法所在类的字节码对象(类名.class)
+			public class RunnableImplMethod implements Runnable {
+				private  int ticket = 100;
+				@Override
+				public void run() {
+					while (true){
+						sellTicket();
+					}
+				}
+				public synchronized void sellTicket(){
+					//先判断票是否存在
+					if(ticket>0){
+						//提高安全问题出现的概率,让程序睡眠
+						try {
+							Thread.sleep(10);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						//票存在,卖票 ticket--
+						System.out.println(Thread.currentThread().getName()+"-->正在卖第"+ticket+"张票");
+						ticket--;
+					}
+				}
+			}
+		    静态同步方法对于static方法,我们使用当前方法所在类的字节码对象(类名.class)。
+		3、Lock锁
+			java.util.concurrent.locks.Lock机制提供了比 synchronized代码块和 synchronized方法更广泛的锁定操作，
+			同步代码块/同步方法具有的功能Lock都有除此之外更强大更体现面向对象。
+			Lock锁也称同步锁，加锁与释放锁方法化了，如下：
+				public void lock() :加同步锁。
+				public void unlock() :释放同步锁
+			使用步骤：
+				java.util.concurrent.locks.ReentrantLock implements Lock接口
+				1、在成员位置创建一个ReentrantLock对象
+				2、在可能会出现安全问题的代码前调用Lock接口中的方法lock获取锁
+				3、在可能会出现安全问题的代码后调用Lock接口中的方法unlock释放锁
+			还是卖票的例子
+			import java.util.concurrent.locks.Lock;
+			import java.util.concurrent.locks.ReentrantLock;
+			public class RunnableImplLock implements Runnable{
+				//定义一个多个线程共享的票源
+				private  int ticket = 100;
+				//1.在成员位置创建一个ReentrantLock对象，使用多态接收 Lock 接口的实现类 ReentrantLock
+				Lock l = new ReentrantLock();
+				//设置线程任务:卖票
+				@Override
+				public void run() {
+					//使用死循环,让卖票操作重复执行
+					while(true){
+						//2.在可能会出现安全问题的代码前调用Lock接口中的方法lock获取锁
+						l.lock();
+
+						//先判断票是否存在
+						if(ticket>0){
+							//提高安全问题出现的概率,让程序睡眠
+							try {
+								Thread.sleep(10);
+								//票存在,卖票 ticket--
+								System.out.println(Thread.currentThread().getName()+"-->正在卖第"+ticket+"张票");
+								ticket--;
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}finally {
+								//3.在可能会出现安全问题的代码后调用Lock接口中的方法unlock释放锁
+								l.unlock();//无论程序是否异常,都会把锁释放
+							}
+						}
+					}
+				}
+			}
+	
+	线程状态和等待唤醒机制
+		线程状态：
+			java.lang.Thread.State 中枚举了六种线程状态，分别是 NEW,RUNNABLE,BLOCKED,WAITING,TIMED_WAITING,TERMINATED;
+			NEW(新建): 线程刚被创建，但是并未启动。还没调用 start方法。
+			RUNNABLE(可运行): 线程可以在java虛拟机中运行的状态，可能正在运行自己代码，也可能没有，这取决于操作系统处理器。
+			BLOCKED(锁阻塞): 当一个线程试图获取一个对象锁，而该对象锁被其他的线程持有，则该线程进入 Blocked状态；当该线程持有锁时，该线程将变成 Runnable状态。
+			WAITING(无限等待): 线程在等待另一个线程执行一个（唤醒）动作时，该线程进入 Waiting状态。进入这个状态后是不能自动唤醒的，必须等待另一个线程调用notify或者notifyAll方法才能够唤醒。
+			TIMED_WAITING(计时等待): 同 waIting状态，有几个方法有超时参数，调用他们将进入Timed Waiting状态。这一状态将一直保持到超时期满或者接收到唤醒通知。带有超时参数的常用方法有 Thread.sleep、Object.wait
+			TERMINATED(被终止): 因为run方法正常退出而死亡，或者因为没有捕获的异常终止了run方法而死亡。
+		
+		Waiting（无限等待）
+			1、一个调用了某个对象的 Object.wait 方法的线程会等待另一个线程调用此对象的Object.notify()方法 或 Object.notifyAll()方法。
+			2、其实waiting状态并不是一个线程的操作，它体现的是多个线程间的通信，可以理解为多个线程之间的协作关系，多个线程会争取锁，同时相互之间又存在协作关系。
+			3、当多个线程协作时，比如A，B线程，如果A线程在Runnable（可运行）状态中调用了wait()方法那么A线程就进入了Waiting（无限等待）状态，同时失去了同步锁。
+			假如这个时候B线程获取到了同步锁，在运行状态中调用了notify()方法，那么就会将无限等待的A线程唤醒。注意是唤醒，如果获取到锁对象，那么A线程唤醒后就进入
+			Runnable（可运行）状态；如果没有获取锁对象，那么就进入到Blocked（锁阻塞状态）。
+	
+		等待唤醒案例:线程之间的通信
+			等待唤醒机制其实就是经典的“生产者与消费者”的问题。
+			创建一个顾客线程(消费者):告知老板要的包子的种类和数量,调用wait方法,放弃cpu的执行,进入到WAITING状态(无限等待)
+			创建一个老板线程(生产者):花了5秒做包子,做好包子之后,调用notify方法,唤醒顾客吃包子
+
+			注意:
+				顾客和老板线程必须使用同步代码块包裹起来,保证等待和唤醒只能有一个在执行
+				同步使用的锁对象必须保证唯一
+				只有 锁对象 才能调用wait和notify方法
+
+			Obejct类中的方法
+			void wait()
+				  在其他线程调用此对象的 notify() 方法或 notifyAll() 方法前，导致当前线程等待。
+			void notify()
+				唤醒在此对象监视器上等待的单个线程。会继续执行wait方法之后的代码
+			
+			实例：
+				public class WaitAndNotifyBase {
+					public static void main(String[] args) {
+						//创建锁对象,保证唯一
+						Object obj = new Object();
+						// 创建一个顾客线程(消费者)
+						new Thread(){
+							@Override
+							public void run() {
+								//一直等着买包子
+								while(true){
+									//保证等待和唤醒的线程只能有一个执行,需要使用同步技术
+									synchronized (obj){
+										System.out.println("告知老板要的包子的种类和数量");
+										//调用wait方法,放弃cpu的执行,进入到WAITING状态(无限等待)
+										try {
+											obj.wait();
+										} catch (InterruptedException e) {
+											e.printStackTrace();
+										}
+										//唤醒之后执行的代码
+										System.out.println("包子已经做好了,开吃!");
+										System.out.println("---------------------------------------");
+									}
+								}
+							}
+						}.start();
+
+						//创建一个老板线程(生产者)
+						new Thread(){
+							@Override
+							public void run() {
+								//一直做包子
+								while (true){
+									//花了5秒做包子
+									try {
+										Thread.sleep(5000);//花5秒钟做包子
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+
+									//保证等待和唤醒的线程只能有一个执行,需要使用同步技术
+									synchronized (obj){
+										System.out.println("老板5秒钟之后做好包子,告知顾客,可以吃包子了");
+										//做好包子之后,调用notify方法,唤醒顾客吃包子
+										obj.notify();
+									}
+								}
+							}
+						}.start();
+					}
+				}
+			输出：
+				告知老板要的包子的种类和数量
+				老板5秒钟之后做好包子,告知顾客,可以吃包子了
+				包子已经做好了,开吃!
+				---------------------------------------
+				
+		进入到TimeWaiting(计时等待)有两种方式
+			1.使用sleep(long m)方法,在毫秒值结束之后,线程睡醒进入到Runnable/Blocked状态
+			2.使用wait(long m)方法,wait方法如果在毫秒值结束之后,还没有被notify唤醒,就会自动醒来,线程睡醒进入到Runnable/Blocked状态
+				唤醒的方法:
+					 void notify() 唤醒在此对象监视器上等待的单个线程。
+					 void notifyAll() 唤醒在此对象监视器上等待的所有线程。
+
+		调用wait和notify方法需要注意的细节
+			1. wait方法与notify方法必须要由同一个锁对象调用。因为：对应的锁对象可以通过notify唤醒使用同一个锁对象调用的wait方法后的线程。
+			2. wait方法与notify方法是属于Object类的方法的。因为：锁对象可以是任意对象，而任意对象的所属类都是继承了Object类的。
+			3. wait方法与notify方法必须要在同步代码块或者是同步函数中使用。因为：必须要通过锁对象调用这2个方法。
+
+	线程池：
+		线程池：其实就是一个容纳多个线程的容器，其中的线程可以反复使用，省去了频繁创建线程对象的操作，无需反复创建线程而消耗过多资源。
+		
+		合理利用线程池能够带来三个好处：
+			1. 降低资源消耗。减少了创建和销毁线程的次数，每个工作线程都可以被重复利用，可执行多个任务。
+			2. 提高响应速度。当任务到达时，任务可以不需要的等到线程创建就能立即执行。
+			3. 提高线程的可管理性。可以根据系统的承受能力，调整线程池中工作线线程的数目，防止因为消耗过多的内存，而把服务器累趴下(每个线程需要大约1MB内存，线程开的越多，消耗的内存也就越大，最后死机)。
+		使用线程池：
+			Java里面线程池的顶级接口是java.util.concurrent.Executor，但是严格意义上讲Executor并不是一个线程池，而只是一个执行线程的工具。真正的线程池接口是java.util.concurrent.ExecutorService
+			要配置一个线程池是比较复杂的，尤其是对于线程池的原理不是很清楚的情况下，很有可能配置的线程池不是较优的，因此在java.util.concurrent.Executors线程工厂类里面提供了一些静态工厂，生成一些常用的线程池。官方建议使用Executors工厂类来创建线程池对象。
+			Executors类中有个创建线程池的方法如下：
+				public static ExecutorService newFixedThreadPool(int nThreads)  返回线程池对象。(创建的是有界线程池,也就是池中的线程个数可以指定最大数量)
+				public Future<?> submit(Runnable task)  获取线程池中的某一个线程对象，并执行。Future接口：用来记录线程任务执行完毕后产生的结果。
+				void shutdown() 关闭/销毁线程池的方法
+            
+		使用线程池中线程对象的步骤：
+			1.使用线程池的工厂类Executors里边提供的静态方法newFixedThreadPool生产一个指定线程数量的线程池
+			2.创建一个类,实现Runnable接口,重写run方法,设置线程任务
+			3.调用ExecutorService中的方法submit,传递线程任务(实现类),开启线程,执行run方法
+			4.调用ExecutorService中的方法shutdown销毁线程池(不建议执行)
+		
+		例子：
+			//Runnable接口的实现类
+			public class RunnableImpl implements Runnable {
+				@Override
+				public void run() {
+					System.out.println(Thread.currentThread().getName()+"创建了一个新的线程执行");
+				}
+			}
+			//使用线程池
+			import java.util.concurrent.ExecutorService;
+			import java.util.concurrent.Executors;
+			public class ThreadPoolDemo {
+				public static void main(String[] args) {
+					//1.使用线程池的工厂类Executors里边提供的静态方法newFixedThreadPool生产一个指定线程数量的线程池
+					ExecutorService es = Executors.newFixedThreadPool(2);
+					//3.调用ExecutorService中的方法submit,传递线程任务(实现类),开启线程,执行run方法
+					es.submit(new RunnableImpl());//pool-1-thread-1创建了一个新的线程执行
+					//线程池会一直开启,使用完了线程,会自动把线程归还给线程池,线程可以继续使用
+					es.submit(new RunnableImpl());//pool-1-thread-1创建了一个新的线程执行
+					es.submit(new RunnableImpl());//pool-1-thread-2创建了一个新的线程执行
+
+					//4.调用ExecutorService中的方法shutdown销毁线程池(不建议执行)
+					es.shutdown();
+
+					es.submit(new RunnableImpl());//抛异常,线程池都没有了,就不能获取线程了
+				}
+			}
+			输出：
+				Exception in thread "main" java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.FutureTask@7cdbc5d3 rejected from java.util.concurrent.ThreadPoolExecutor@3aa9e816[Shutting down, pool size = 2, active threads = 2, queued tasks = 1, completed tasks = 0]
+					at java.base/java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:2104)
+					at java.base/java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:848)
+					at java.base/java.util.concurrent.ThreadPoolExecutor.execute(ThreadPoolExecutor.java:1397)
+					at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:118)
+					at demo.mutiThread.threadPool.ThreadPoolDemo.main(ThreadPoolDemo.java:19)
+				pool-1-thread-2创建了一个新的线程执行
+				pool-1-thread-1创建了一个新的线程执行
+				pool-1-thread-2创建了一个新的线程执行
+	
+	Lambda表达式
+		对于创建新线程的代码，即使我们使用匿名内部类也是有些繁琐
+
+		new Thread(new Runnable() {
+					@Override
+					public void run() {
+						System.out.println("多线程1");
+					}
+				}).start();
+		对于 Runnable 的匿名内部类用法，可以分析出几点内容：
+			Thread 类需要 Runnable 接口作为参数，其中的抽象 run 方法是用来指定线程任务内容的核心；
+			为了指定 run 的方法体，不得不需要 Runnable 接口的实现类；
+			为了省去定义一个 RunnableImpl 实现类的麻烦，不得不使用匿名内部类；
+			必须覆盖重写抽象 run 方法，所以方法名称、方法参数、方法返回值不得不再写一遍，且不能写错；
+			而实际上，似乎只有方法体才是关键所在。
+		我们写了那么多代码还创建对象，但我们最关键的是重写run方法，因此JDK1.8以后，java中有了lambda表达式，以上创建线程的代码可以写为：
+			new Thread(()-> System.out.println("多线程2")).start();
+		这样，不再有“不得不创建接口对象”的束缚，不再有“抽象方法覆盖重写”的负担了。
+		Lambda标准格式
+			(参数类型 参数名称) ‐> { 代码语句 }
+			由三部分组成：一些参数、一个箭头、一段代码
+		说明：
+			小括号内的语法与传统方法参数列表一致：无参数则留空；多个参数则用逗号分隔。
+			-> 是新引入的语法格式，代表指向动作。
+			大括号内的语法与传统方法体要求基本一致。
+		省略规则
+			在Lambda标准格式的基础上，使用省略写法的规则为：
+			1. 小括号内参数的类型可以省略；
+			2. 如果小括号内有且仅有一个参，则小括号可以省略；
+			3. 如果大括号内有且仅有一个语句，则无论是否有返回值，都可以省略大括号、return关键字及语句分号。
+		lambda使用前提
+			1. 使用Lambda必须具有接口，且要求接口中有且仅有一个抽象方法。
+			无论是JDK内置的 Runnable 、 Comparator 接口还是自定义的接口，只有当接口中的抽象方法存在且唯一时，才可以使用Lambda。
+			2. 使用Lambda必须具有上下文推断。
+			也就是方法的参数或局部变量类型必须为Lambda对应的接口类型，才能使用Lambda作为该接口的实例。
+			另外：有且仅有一个抽象方法的接口，称为“函数式接口”。
+
+		例子：
+
+		//有一个函数式接口
+		public interface Calculator {
+			int calc(int a,int b);
+		}
+
+		//使用lambda表达式
+		public class UseCalc {
+			//invokeCalc方法的参数中，有Calculator接口的实现类对象
+			private static void invokeCalc(int a, int b, Calculator calculator) {
+				int result = calculator.calc(a, b);
+				System.out.println("结果是：" + result);
+			}
+
+			public static void main(String[] args) {
+				//如果我们在主方法中调用invokeCalc方法，因为invokeCalc方法中传递了Calculator接口对象作为参数
+				//传统的方法进行调用时，我们需要先new一个Calculator并重写其中的calc方法(匿名内部类)
+				invokeCalc(120, 130, new Calculator() {
+					@Override
+					public int calc(int a, int b) {
+						return a+b;
+					}
+				});
+				//而用lambda表达式如下
+				invokeCalc(123,130,(int a,int b)->{return a+b;});
+				//lambda省略省略格式
+				invokeCalc(123,130,(a,b)->a+b);
+			}
+		}
+
+File类与IO流
+File：
+	java.io.File 类是文件和目录路径名的抽象表示，主要用于文件和目录的创建、查找和删除等操作。
+	构造方法：
+		public File(String pathname) ：通过将给定的路径名字符串转换为抽象路径名来创建新的 File实例。
+		public File(String parent, String child) ：从父路径名字符串和子路径名字符串创建新的 File实例。
+		public File(File parent, String child) ：从父抽象路径名和子路径名字符串创建新的 File实例。
+	常用方法：
+		路径
+		public String getAbsolutePath() ：返回此File的绝对路径名字符串。
+		public String getPath() ：将此File转换为路径名字符串。
+		public String getName() ：返回由此File表示的文件或目录的名称。
+		public long length() ：返回由此File表示的文件的长度。
+			例子：
+			File f2 = new File("b\\bbb.log");
+			System.out.println("目录绝对路径:"+f2.getAbsolutePath());
+			System.out.println("目录构造路径:"+f2.getPath());
+			System.out.println("目录名称:"+f2.getName());
+			System.out.println("目录长度:"+f2.length());
+			输出：
+			目录绝对路径:D:\1_Code\java\javaSE\vedio\b\bbb.log
+			目录构造路径:b\bbb.log
+			目录名称:bbb.log
+			目录长度:3
+		判断
+		public boolean exists() ：此File表示的文件或目录是否实际存在。
+		public boolean isDirectory() ：此File表示的是否为目录。
+		public boolean isFile() ：此File表示的是否为文件。
+			例子：
+			System.out.println("b\\bbb.log 是否存在：" + f2.exists());
+			System.out.println("b\\bbb.log 文件?:"+f2.isFile());
+			System.out.println("b\\bbb.log 目录?:"+f2.isDirectory());
+			输出：
+			b\bbb.log 是否存在：true
+			b\bbb.log 文件?:true
+			b\bbb.log 目录?:false
+		创建和删除
+		public boolean createNewFile() ：当且仅当具有该名称的文件尚不存在时，创建一个新的空文件。
+		public boolean delete() ：删除由此File表示的文件或目录。
+		public boolean mkdir() ：创建由此File表示的目录。
+		public boolean mkdirs() ：创建由此File表示的目录，包括任何必需但不存在的父目录。
+		遍历
+		public String[] list() ：返回一个String数组，表示该File目录中的所有子文件或目录。
+		public File[] listFiles() ：返回一个File数组，表示该File目录中的所有的子文件或目录。
+			例子：
+			File dir = new File("D:\\1_Code\\java\\javaSE");
+			//获取当前目录下的文件以及文件夹的名称。
+			String[] names = dir.list();
+			for(String name : names){
+				System.out.println(name);
+			}
+			//获取当前目录下的文件以及文件夹对象，只要拿到了文件对象，那么就可以获取更多信息
+			File[] files = dir.listFiles();
+			for (File file : files) {
+				System.out.println(file);
+			}
+			输出：
+			liao
+			vedio
+			D:\1_Code\java\javaSE\liao
+			D:\1_Code\java\javaSE\vedio
+		递归遍历：
+			递归一定要有条件限定，保证递归能够停止下来，否则会发生栈内存溢出。
+			在递归中虽然有限定条件，但是递归次数不能太多。否则也会发生栈内存溢出。
+			构造方法,禁止递归
+			例子：
+			public static void printDir(File dir) {
+				// 获取子文件和目录
+				File[] files = dir.listFiles();
+				for (File file : files) {
+					if (file.isFile()) {
+					// 是文件,输出文件绝对路径
+						System.out.println("文件名:" + file.getAbsolutePath());
+					} else {
+						// 是目录,输出目录绝对路径
+						System.out.println("目录:" + file.getAbsolutePath());
+						// 继续遍历,调用printDir,形成递归
+						printDir(file);
+					}
+				}
+			}
+			public static void main(String[] args) {
+				// 创建File对象
+				File dir = new File("b");
+				// 调用打印目录方法
+				printDir(dir);
+			}
+			输出：
+			目录:D:\1_Code\java\javaSE\vedio\b\a
+			文件名:D:\1_Code\java\javaSE\vedio\b\a\a.txt
+			文件名:D:\1_Code\java\javaSE\vedio\b\a\b.txt
+			文件名:D:\1_Code\java\javaSE\vedio\b\bbb.log
+	文件过滤器
+	java.io.FileFilter 是一个接口，是File的过滤器。 该接口的对象可以传递给File类的 listFiles(FileFilter)作为参数， 接口中只有一个方法。
+	boolean accept(File pathname) ：测试pathname是否应该包含在当前File目录中，符合则返回true。
+	参数为File，表示当前File下所有的子文件和子目录。保留住则返回true，过滤掉则返回false。
+		搜索打印.log文件
+			public static void printDir2(File dir) {
+				// 匿名内部类方式,创建过滤器子类对象
+				File[] files = dir.listFiles(new FileFilter() {
+					@Override
+					public boolean accept(File pathname) {
+						return pathname.getName().endsWith(".log")||pathname.isDirectory();
+					}
+				});
+				// 循环打印
+				for (File file : files) {
+					if (file.isFile()) {
+						System.out.println("文件名:" + file.getAbsolutePath());
+					} else {
+						printDir2(file);
+					}
+				}
+			}
+			使用Lambda表达式
+			public static void printDirLambda(File dir) {
+				// 匿名内部类方式,创建过滤器子类对象
+				File[] files = dir.listFiles(pathname->{
+					return pathname.getName().endsWith(".log")||pathname.isDirectory();
+				});
+				//File[] files = dir.listFiles(pathname->pathname.getName().endsWith(".log")||pathname.isDirectory());
+				// 循环打印
+				for (File file : files) {
+					if (file.isFile()) {
+						System.out.println("文件名:" + file.getAbsolutePath());
+					} else {
+						printDir2(file);
+					}
+				}
+			}
+
+字节流、字符流
+	I/O
+		我们把这种数据的传输，可以看做是一种数据的流动，按照流动的方向，以内存为基准，分为 输入 input  和 输出 output  ，即流向内存是输入流，流出内存的输出流。
+		Java中I/O操作主要是指使用 java.io 包下的内容，进行输入、输出操作。输入也叫做读取数据，输出也叫做作写出数据。
+	I/O分类
+		根据数据的流向分为：输入流和输出流。
+			输入流 ：把数据从 其他设备 上读取到 内存 中的流。
+			输出流 ：把数据从 内存  中写出到 其他设备 上的流。
+		根据数据的类型分为：字节流和字符流。
+			字节流：以字节为单位，读写数据的流。
+			字符流：以字符为单位，读写数据的流。
+	顶级父类
+		字节输入流 InputStream
+		字节输出流 OutputStream
+		字符输入流 Reader
+		字符输出流 Writer
+
+	字节流
+		一切文件数据(文本、图片、视频等)在存储时，都是以二进制数字的形式保存，都一个一个的字节，那么传输时一样如此。
+		所以，字节流可以传输任意文件数据。在操作流的时候，我们要时刻明确，无论使用什么样的流对象，底层传输的始终为二进制数据。
+	字节输出流【OutputStream】
+		java.io.OutputStream  抽象类是表示字节输出流的所有类的超类，将指定的字节信息写出到目的地。它定义了字节输出流的基本共性功能方法。
+		*  public void close()  ：关闭此输出流并释放与此流相关联的任何系统资源。  
+		*  public void flush()   ：刷新此输出流并强制任何缓冲的输出字节被写出。  
+		*  public void write(byte[] b) ：将 b.length字节从指定的字节数组写入此输出流。  
+		*  public void write(byte[] b, int off, int len)  ：从指定的字节数组写入 len字节，从偏移量 off开始输出到此输出流。  
+		*  public abstract void write(int b)  ：将指定的字节输出流。
+		close方法，当完成流的操作时，必须调用此方法，释放系统资源。
+
+		FileOutputStream类
+			OutputStream 有很多子类，我们从最简单的一个子类开始。
+			java.io.FileOutputStream  类是文件输出流，用于将数据写出到文件。
+
+		构造方法
+		*  public FileOutputStream(File file) ：创建文件输出流以写入由指定的 File对象表示的文件。
+		*  public FileOutputStream(String name) ： 创建文件输出流以指定的名称写入文件。  
+		当你创建一个流对象时，必须传入一个文件路径。该路径下，如果没有这个文件，会创建该文件。如果有这个文件，会清空这个文件的数据。
+		构造举例，代码如下：
+		public class FileOutputStreamConstructor throws IOException {
+			public static void main(String[] args) {
+			  // 使用File对象创建流对象
+				File file = new File("a.txt");
+				FileOutputStream fos = new FileOutputStream(file);
+			  
+				// 使用文件名称创建流对象
+				FileOutputStream fos = new FileOutputStream("b.txt");
+			}
+		}
+
+		数据追加续写
+			经过以上的演示，每次程序运行，创建输出流对象，都会清空目标文件中的数据。如何保留目标文件中数据，还能继续添加新数据呢？
+			-  public FileOutputStream(File file, boolean append) ： 创建文件输出流以写入由指定的 File对象表示的文件。  
+			-  public FileOutputStream(String name, boolean append) ： 创建文件输出流以指定的名称写入文件。  
+			这两个构造方法，参数中都需要传入一个boolean类型的值， true  表示追加数据， false  表示清空原有数据。这样创建的输出流对象，就可以指定是否追加续写了，代码使用演示：
+			public class FOSWrite {
+				public static void main(String[] args) throws IOException {
+					// 使用文件名称创建流对象
+					FileOutputStream fos = new FileOutputStream("fos.txt"，true);     
+				   // 字符串转换为字节数组
+				   byte[] b = "abcde".getBytes();
+			// 写出从索引2开始，2个字节。索引2是c，两个字节，也就是cd。
+					fos.write(b);
+				   // 关闭资源
+					fos.close();
+				}
+			}
+			文件操作前：cd
+			文件操作后：cdabcde
+ 
+		写出换行
+			回车符 \r 和换行符 \n  ：
+			回车符：回到一行的开头（return）。
+			换行符：下一行（newline）。
+			系统中的换行：
+				Windows系统里，每行结尾是  回车+换行  ，即 \r\n ；
+				Unix系统里，每行结尾只有  换行  ，即 \n ；
+				Mac系统里，每行结尾是  回车  ，即 \r 。从 Mac OS X开始与Linux统一。
+
+ 
+	字节输入流【InputStream】
+		java.io.InputStream  抽象类是表示字节输入流的所有类的超类，可以读取字节信息到内存中。它定义了字节输入流的基本共性功能方法。
+		-  public void close()  ：关闭此输入流并释放与此流相关联的任何系统资源。    
+		-  public abstract int read() ： 从输入流读取数据的下一个字节。
+		-  public int read(byte[] b) ： 从输入流中读取一些字节数，并将它们存储到字节数组 b中 。
+		close方法，当完成流的操作时，必须调用此方法，释放系统资源。
+
+		FileInputStream类
+			java.io.FileInputStream  类是文件输入流，从文件中读取字节。
+			构造方法
+			*  FileInputStream(File file) ： 通过打开与实际文件的连接来创建一个 FileInputStream ，该文件由文件系统中的 File对象 file命名。
+			*  FileInputStream(String name) ： 通过打开与实际文件的连接来创建一个 FileInputStream ，该文件由文件系统中的路径名 name命名。  
+			当创建一个流对象时，必须传入一个文件路径。该路径下，如果没有该文件,会抛出 FileNotFoundException  。
+
+			public class FISRead {
+				public static void main(String[] args) throws IOException{
+				   // 使用文件名称创建流对象
+					FileInputStream fis = new FileInputStream("read.txt");
+				   // 定义变量，保存数据
+					int b ；
+					// 循环读取
+					while ((b = fis.read())!=-1) {
+						System.out.println((char)b);
+					}
+			// 关闭资源
+					fis.close();
+				}
+			}
+
+			使用字节数组读取： read(byte[] b) ，每次读取b的长度个字节到数组中，返回读取到的有效字节个数，读取到末尾时，返回 -1  ，
+			使用数组读取，每次读取多个字节，减少了系统间的IO操作次数，从而提高了读写的效率，建议开发中使用。
+			代码使用演示：
+				public class FISRead {
+					public static void main(String[] args) throws IOException{
+					   // 使用文件名称创建流对象.
+						FileInputStream fis = new FileInputStream("read.txt"); // 文件中为abcde
+					   // 定义变量，作为有效个数
+						int len ；
+						// 定义字节数组，作为装字节数据的容器   
+						byte[] b = new byte[2];
+						// 循环读取
+						while (( len= fis.read(b))!=-1) {
+							// 每次读取后,把数组变成字符串打印
+							System.out.println(new String(b));
+						}
+				// 关闭资源
+						fis.close();
+					}
+				}
+
+			复制图片文件，代码使用演示：
+			public class FileCopy {
+				public static void main(String[] args) throws IOException {
+					// 1.创建流对象
+					// 1.1 指定数据源
+					FileInputStream fis = new FileInputStream("ioDir\\test.jpg");
+					// 1.2 指定目的地
+					FileOutputStream fos = new FileOutputStream("ioDir\\test_copy.jpg");
+					// 2.读写数据
+					// 2.1 定义数组
+					byte[] b = new byte[1024];
+					// 2.2 定义长度
+					int len;
+					// 2.3 循环读取
+					while ((len = fis.read(b))!=-1) {
+						// 2.4 写出数据
+						fos.write(b,0,len);
+					}
+					// 3.关闭资源
+					fos.close();
+					fis.close();
+				}
+			}
+			流的关闭原则：先开后关，后开先关。
+
+ 
+	字符流
+		当使用字节流读取文本文件时，可能会有一个小问题。就是遇到中文字符时，可能不会显示完整的字符，那是因为一个中文字符可能占用多个字节存储。
+		所以Java提供一些字符流类，以字符为单位读写数据，专门用于处理文本文件。
+		字符流，只能操作文本文件，不能操作图片，视频等非文本文件。
+		当我们单纯读或者写文本文件时  使用字符流 其他情况使用字节流
+
+		字符输入流【Reader】
+			java.io.Reader 抽象类是表示用于读取字符流的所有类的超类，可以读取字符信息到内存中。它定义了字符输入流的基本共性功能方法。
+			-  public void close()  ：关闭此流并释放与此流相关联的任何系统资源。    
+			-  public int read() ： 从输入流读取一个字符。
+			-  public int read(char[] cbuf) ： 从输入流中读取一些字符，并将它们存储到字符数组 cbuf中 。
+
+			FileReader类  
+				java.io.FileReader  类是读取字符文件的便利类。构造时使用系统默认的字符编码和默认字节缓冲区。
+				字符编码：字节与字符的对应规则。Windows系统的中文编码默认是GBK编码表。
+				idea中UTF-8
+				字节缓冲区：一个字节数组，用来临时存储字节数据。
+
+				构造方法
+				-  FileReader(File file) ： 创建一个新的 FileReader ，给定要读取的File对象。   
+				-  FileReader(String fileName) ： 创建一个新的 FileReader ，给定要读取的文件的名称。  
+				当你创建一个流对象时，必须传入一个文件路径。类似于FileInputStream 。
+				读取字符数据
+				public class FISRead {
+					public static void main(String[] args) throws IOException {
+					   // 使用文件名称创建流对象
+						FileReader fr = new FileReader("read.txt");
+					   // 定义变量，保存有效字符个数
+						int len ；
+						// 定义字符数组，作为装字符数据的容器
+						char[] cbuf = new char[2];
+						// 循环读取
+						while ((len = fr.read(cbuf))!=-1) {
+							System.out.println(new String(cbuf,0,len));
+						}
+					 // 关闭资源
+						fr.close();
+					}
+				}
+
+		字符输出流【Writer】
+			java.io.Writer  抽象类是表示用于写出字符流的所有类的超类，将指定的字符信息写出到目的地。它定义了字节输出流的基本共性功能方法。
+			-  void write(int c)  写入单个字符。
+			-  void write(char[] cbuf)  写入字符数组。
+			-  abstract  void write(char[] cbuf, int off, int len)  写入字符数组的某一部分,off数组的开始索引,len写的字符个数。
+			-  void write(String str)  写入字符串。
+			-  void write(String str, int off, int len)  写入字符串的某一部分,off字符串的开始索引,len写的字符个数。
+			-  void flush()  刷新该流的缓冲。  
+			-  void close()  关闭此流，但要先刷新它。
+
+			FileWriter类
+				java.io.FileWriter  类是写出字符到文件的便利类。构造时使用系统默认的字符编码和默认字节缓冲区。
+			构造方法
+			-  FileWriter(File file) ： 创建一个新的 FileWriter，给定要读取的File对象。   
+			-  FileWriter(String fileName) ： 创建一个新的 FileWriter，给定要读取的文件的名称。  
+			当你创建一个流对象时，必须传入一个文件路径，类似于FileOutputStream。
+
+			public class FileWriterConstructor {
+				public static void main(String[] args) throws IOException {
+				  // 使用File对象创建流对象
+					File file = new File("a.txt");
+					FileWriter fw = new FileWriter(file);
+				  
+					// 使用文件名称创建流对象
+					FileWriter fw = new FileWriter("b.txt");
+				}
+			}
+
+			因为内置缓冲区的原因，如果不关闭输出流，无法写出字符到文件中。但是关闭的流对象，是无法继续写出数据的。如果我们既想写出数据，又想继续使用流，就需要 flush  方法了。
+			*  flush  ：刷新缓冲区，流对象可以继续使用。
+			*  close  :先刷新缓冲区，然后通知系统释放资源。流对象不可以再被使用了。
+
+
+	IO异常的处理
+		JDK7前处理
+			public class HandleException1 {
+				public static void main(String[] args) {
+				   // 声明变量
+					FileWriter fw = null;
+					try {
+						//创建流对象
+						fw = new FileWriter("fw.txt");
+						// 写出数据
+						fw.write("黑马程序员"); //黑马程序员
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						try {
+							if (fw != null) {
+								fw.close();
+							}
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+   
+		JDK7的处理
+			try-with-resource  语句，该语句确保了每个资源在语句结束时关闭。所谓的资源（resource）是指在程序完成后，必须关闭的对象。
+			格式：
+			try (创建流对象语句，如果多个,使用';'隔开) {
+			// 读写数据
+			} catch (IOException e) {
+			e.printStackTrace();
+			}
+			示例：
+			public class HandleException2 {
+				public static void main(String[] args) {
+				   // 创建流对象
+					try ( FileWriter fw = new FileWriter("fw.txt"); ) {
+						// 写出数据
+						fw.write("黑马程序员"); //黑马程序员
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+   
+		JDK9的改进(扩展知识点了解内容)
+			JDK9中 try-with-resource  的改进，对于 引入对象 的方式，支持的更加简洁。被引入的对象，同样可以自动关闭，无需手动close，我们来了解一下格式。
+			改进前格式：
+				// 被final修饰的对象
+				final Resource resource1 = new Resource("resource1");
+				// 普通对象
+				Resource resource2 = new Resource("resource2");
+				// 引入方式：创建新的变量保存
+				try (Resource r1 = resource1;
+					 Resource r2 = resource2) {
+					 // 使用对象
+				}
+
+			改进后格式：
+				// 被final修饰的对象
+				final Resource resource1 = new Resource("resource1");
+				// 普通对象
+				Resource resource2 = new Resource("resource2");
+				// 引入方式：直接引入
+				try (resource1; resource2) {
+					 // 使用对象
+				}
+   
+			改进后，代码使用演示：
+			public class TryDemo {
+				public static void main(String[] args) throws IOException {
+					// 创建流对象
+					final  FileReader fr  = new FileReader("in.txt");
+					FileWriter fw = new FileWriter("out.txt");
+					// 引入到try中
+					try (fr; fw) {
+					   // 定义变量
+						int b;
+					   // 读取数据
+					   while ((b = fr.read())!=-1) {
+						 // 写出数据
+						 fw.write(b);
+					   }
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+   
+	属性集
+		java.util.Properties   继承于  Hashtable  ，来表示一个持久的属性集。它使用键值结构存储数据，每个键及其对应值都是一个字符串。
+		该类也被许多Java类使用，比如获取系统属性时， System.getProperties  方法就是返回一个 Properties 对象。
+		
+		Properties类
+			构造方法
+			public Properties()  :创建一个空的属性列表。
+
+			基本的存储方法
+			-  public Object setProperty(String key, String value)  ： 保存一对属性。  
+			-  public String getProperty(String key)   ：使用此属性列表中指定的键搜索属性值。
+			-  public Set<String> stringPropertyNames()   ：所有键的名称的集合。
+
+			public class ProDemo {
+				public static void main(String[] args) throws FileNotFoundException {
+					// 创建属性集对象
+					Properties properties = new Properties();
+					// 添加键值对元素
+					properties.setProperty("filename", "a.txt");
+					properties.setProperty("length", "209385038");
+					properties.setProperty("location", "D:\\a.txt");
+					// 打印属性集对象
+					System.out.println(properties);
+					// 通过键,获取属性值
+					System.out.println(properties.getProperty("filename"));
+					System.out.println(properties.getProperty("length"));
+					System.out.println(properties.getProperty("location"));
+
+			 
+					// 遍历属性集,获取所有键的集合
+					Set<String> strings = properties.stringPropertyNames();
+					// 打印键值对
+					for (String key : strings ) {
+					   System.out.println(key+" -- "+properties.getProperty(key));
+					}
+				}
+			}
+
+			与流相关的方法
+				-  public void load(InputStream inStream) ： 从字节输入流中读取键值对。
+				参数中使用了字节输入流，通过流对象，可以关联到某文件上，这样就能够加载文本中的数据了。文本数据格式:
+				文本中的数据，必须是键值对形式，可以使用空格、等号、冒号等符号分隔。
+				filename=a.txt
+				length=209385038
+				location=D:\a.txt
+	   
+				加载代码演示：
+				public class ProDemo2 {
+					public static void main(String[] args) throws FileNotFoundException {
+						// 创建属性集对象
+						Properties pro = new Properties();
+						// 加载文本中信息到属性集
+						pro.load(new FileInputStream("read.txt"));
+						// 遍历集合并打印
+						Set<String> strings = pro.stringPropertyNames();
+						for (String key : strings ) {
+						   System.out.println(key+" -- "+pro.getProperty(key));
+						}
+					 }
+				}
+				输出结果：
+				filename -- a.txt
+				length -- 209385038
+				location -- D:\a.txt
+	
+	缓冲流
+		也叫高效流，是对4个基本的 FileXxx  流的增强，所以也是4个流，按照数据类型分类：
+		字节缓冲流  ： BufferedInputStream ， BufferedOutputStream 
+		字符缓冲流  ： BufferedReader ， BufferedWriter 
+		缓冲流的基本原理，是在创建流对象时，会创建一个内置的默认大小的缓冲区数组，通过缓冲区读写，减少系统IO次数，从而提高读写的效率。
+
+		字节缓冲流
+		构造方法
+		   public BufferedInputStream(InputStream in)  ：创建一个 新的缓冲输入流。
+		   public BufferedOutputStream(OutputStream out) ： 创建一个新的缓冲输出流。
+
+		// 创建字节缓冲输入流
+		BufferedInputStream bis = new BufferedInputStream(new FileInputStream("bis.txt"));
+		// 创建字节缓冲输出流
+		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("bos.txt"));
+
+		测试一下缓冲流的效率
+
+		import java.io.*;
+		public class BufferedIO {
+			public static void main(String[] args) throws FileNotFoundException {
+				FileIO();
+				bufferedIO();
+				bufferedIOByArray();
+			}
+
+			public static void FileIO() throws FileNotFoundException {
+				// 记录开始时间
+				long start = System.currentTimeMillis();
+				// 创建流对象
+				try (
+						FileInputStream fis = new FileInputStream("ioDir/wps.exe");
+						FileOutputStream fos = new FileOutputStream("ioDir/copy.exe.io")
+				) {
+					// 读写数据
+					int b;
+					while ((b = fis.read()) != -1) {
+						fos.write(b);
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				// 记录结束时间
+				long end = System.currentTimeMillis();
+				System.out.println("普通流复制时间:" + (end - start) + " 毫秒");
+			}
+
+			public static void bufferedIO() throws FileNotFoundException {
+				// 记录开始时间
+				long start = System.currentTimeMillis();
+				// 创建流对象
+				try (
+						BufferedInputStream bis = new BufferedInputStream(new FileInputStream("ioDir/wps.exe"));
+						BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("ioDir/copy.exe.buff"));
+				) {
+					// 读写数据
+					int b;
+					while ((b = bis.read()) != -1) {
+						bos.write(b);
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				// 记录结束时间
+				long end = System.currentTimeMillis();
+				System.out.println("缓冲流复制时间:" + (end - start) + " 毫秒");
+			}
+
+			public static void bufferedIOByArray() throws FileNotFoundException {
+				// 记录开始时间
+				long start = System.currentTimeMillis();
+				// 创建流对象
+				try (
+						BufferedInputStream bis = new BufferedInputStream(new FileInputStream("ioDir/wps.exe"));
+						BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("ioDir/copy.exe.buffArray"));
+				) {
+					// 读写数据
+					int len;
+					byte[] bytes = new byte[8   1024];
+					while ((len = bis.read(bytes)) != -1) {
+						bos.write(bytes, 0, len);
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				// 记录结束时间
+				long end = System.currentTimeMillis();
+				System.out.println("缓冲流使用数组复制时间:" + (end - start) + " 毫秒");
+			}
+		}
+
+		缓冲流复制时间:3234 毫秒
+		缓冲流使用数组复制时间:375 毫秒
+		普通流复制时间太长了，在十几分钟，没有测试完成
+
+		字符缓冲流
+		构造方法
+		   public BufferedReader(Reader in)  ：创建一个 新的缓冲输入流。
+		   public BufferedWriter(Writer out) ： 创建一个新的缓冲输出流。
+
+		// 创建字符缓冲输入流
+		BufferedReader br = new BufferedReader(new FileReader("br.txt"));
+		// 创建字符缓冲输出流
+		BufferedWriter bw = new BufferedWriter(new FileWriter("bw.txt"));
+
+		特有方法
+		  BufferedReader： public String readLine() : 读一行文字。
+		  BufferedWriter： public void newLine() : 写一行行分隔符,由系统属性定义符号。
+
+		public class BufferedReaderDemo {
+			public static void main(String[] args) throws IOException {
+				// 创建流对象
+				BufferedReader br = new BufferedReader(new FileReader("in.txt"));
+				// 定义字符串,保存读取的一行文字
+				String line  = null;
+			   // 循环读取,读取到最后返回null
+				while ((line = br.readLine())!=null) {
+					System.out.print(line);
+					System.out.println("------");
+				}
+				// 释放资源
+				br.close();
+			}
+		}
+
+		public class BufferedWriterDemo throws IOException {
+			public static void main(String[] args) throws IOException  {
+				// 创建流对象
+				BufferedWriter bw = new BufferedWriter(new FileWriter("out.txt"));
+				// 写出数据
+				bw.write("名字");
+				// 写出换行
+				bw.newLine();
+				bw.write("年龄");
+				bw.newLine();
+				// 释放资源
+				bw.close();
+			}
+		}
+	
+	转换流
+		计算机中储存的信息都是用二进制数表示的，而我们在屏幕上看到的数字、英文、标点符号、汉字等字符是二进制数转换之后的结果。
+		按照某种规则，将字符存储到计算机中，称为 编码。反之，将存储在计算机中的二进制数按照某种规则解析显示出来，称为 解码。
+		ASCII（American Standard Code for Information Interchange，美国信息交换标准代码）是基于拉丁字母的一套电脑编码系统，
+			用于显示现代英语，主要包括控制字符（回车键、退格、换行键等）和可显示字符（英文大小写字符、阿拉伯数字和西文符号）。
+			基本的ASCII字符集，使用7位（bits）表示一个字符，共128字符。ASCII的扩展字符集使用8位（bits）表示一个字符，共256字符，方便支持欧洲常用字符。
+		Unicode编码系统为表达任意语言的任意字符而设计，是业界的一种标准，也称为统一码、标准万国码。
+		  它最多使用4个字节的数字来表达每个字母、符号，或者文字。有三种编码方案，UTF-8、UTF-16和UTF-32。最为常用的UTF-8编码。
+		  UTF-8编码，可以用来表示Unicode标准中任何字符，它是电子邮件、网页及其他存储或传送文字的应用中，优先采用的编码。
+		  互联网工程工作小组（IETF）要求所有互联网协议都必须支持UTF-8编码。所以，我们开发Web应用，也要使用UTF-8编码。
+		GBK：最常用的中文码表。是在GB2312标准基础上的扩展规范，使用了双字节编码方案，共收录了21003个汉字，完全兼容GB2312标准，同时支持繁体汉字以及日韩汉字等。  
+
+		InputStreamReader类
+			用于将字节码转换为指定编码格式的字符流，可以从文件中read
+			转换流java.io.InputStreamReader，是Reader的子类，是从字节流到字符流的桥梁。它读取字节，并使用指定的字符集将其解码为字符。它的字符集可以由名称指定，也可以接受平台的默认字符集。
+			构造方法
+			InputStreamReader(InputStream in): 创建一个使用默认字符集的字符流。
+			InputStreamReader(InputStream in, String charsetName): 创建一个指定字符集的字符流。
+			InputStreamReader isr = new InputStreamReader(new FileInputStream("in.txt"));
+			InputStreamReader isr2 = new InputStreamReader(new FileInputStream("in.txt") , "GBK");
+
+		OutputStreamWriter类
+			用于将字符流转换为指定编码格式的字节流，可以write为文件
+			转换流java.io.OutputStreamWriter ，是Writer的子类，是从字符流到字节流的桥梁。使用指定的字符集将字符编码为字节。它的字符集可以由名称指定，也可以接受平台的默认字符集。
+			构造方法
+			OutputStreamWriter(OutputStream in): 创建一个使用默认字符集的字符流。
+			OutputStreamWriter(OutputStream in, String charsetName): 创建一个指定字符集的字符流。
+			OutputStreamWriter isr = new OutputStreamWriter(new FileOutputStream("out.txt"));
+			OutputStreamWriter isr2 = new OutputStreamWriter(new FileOutputStream("out.txt") , "GBK");
+		InputStreamReader和OutputStreamWriter与其他输入、输出流类似，可以进行read和write操作，这里就不多解释了。
+		
+		序列化流
+		Java 提供了一种对象序列化的机制，用一个字节序列可以表示一个对象，该字节序列包含该对象的数据、对象的类型和对象中存储的属性等信息。字节序列写出到文件之后，相当于文件中**持久保存**了一个对象的信息。
+		反之，该字节序列还可以从文件中读取回来，重构对象，对它进行**反序列化**。对象的数据、对象的类型和对象中存储的数据信息，都可以用来在内存中创建对象。
+
+		ObjectOutputStream类
+			java.io.ObjectOutputStream  类，将Java对象的原始数据类型写出到文件,实现对象的持久存储。
+			构造方法
+			public ObjectOutputStream(OutputStream out) ： 创建一个指定OutputStream的ObjectOutputStream。
+
+			FileOutputStream fileOut = new FileOutputStream("employee.txt");
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+
+			写出对象方法
+			public final void writeObject (Object obj) : 将指定的对象写出。
+
+
+		ObjectInputStream类
+			ObjectInputStream反序列化流，将之前使用ObjectOutputStream序列化的原始数据恢复为对象。
+
+			构造方法
+			public ObjectInputStream(InputStream in) ： 创建一个指定InputStream的ObjectInputStream。
+
+			如果能找到一个对象的class文件，我们可以进行反序列化操作，调用ObjectInputStream读取对象的方法：
+			public final Object readObject () : 读取一个对象。
+
+		将一个类实现Serializable接口
+			public class Employee implements java.io.Serializable {
+				public String name;
+				public String address;
+				public transient int age; // transient瞬态修饰成员,不会被序列化
+			}
+
+		一个对象想要序列化，需要满足：
+			该类必须实现java.io.Serializable  接口，Serializable 是一个标记接口，不实现此接口的类将不会使任何状态序列化或反序列化，会抛出NotSerializableException 。
+			该类的所有属性必须是可序列化的。如果有一个属性不需要可序列化的，则该属性必须注明是瞬态的，使用transient 关键字修饰。
+			
+		序列化
+			public class SerializeDemo{
+				public static void main(String [] args)   {
+				 Employee e = new Employee();
+				 e.name = "zhangsan";
+				 e.address = "beijing";
+				 e.age = 20;
+				 try {
+				   // 创建序列化流对象
+					  ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("employee.txt"));
+					 // 写出对象
+					 out.writeObject(e);
+					 // 释放资源
+					 out.close();
+					 fileOut.close();
+					} catch(IOException i)   {
+						i.printStackTrace();
+					}
+				}
+			}
+
+		反序列化
+			public class DeserializeDemo {
+			   public static void main(String [] args)   {
+					Employee e = null;
+					try { 
+						 // 创建反序列化流
+						 FileInputStream fileIn = new FileInputStream("employee.txt");
+						 ObjectInputStream in = new ObjectInputStream(fileIn);
+						 // 读取一个对象
+						 e = (Employee) in.readObject();
+						 // 释放资源
+						 in.close();
+						 fileIn.close();
+					}catch(IOException i) {
+						 // 捕获其他异常
+						 i.printStackTrace();
+						 return;
+					}catch(ClassNotFoundException c)  {
+					 // 捕获类找不到异常
+						 System.out.println("Employee class not found");
+						 c.printStackTrace();
+						 return;
+					}
+					// 无异常,直接打印输出
+					System.out.println("Name: " + e.name); // zhangsan
+					System.out.println("Address: " + e.address); // beijing
+					System.out.println("age: " + e.age); // 0
+				}
+			}
+
+Junit使用：白盒测试
+	* 测试分类：
+			1. 黑盒测试：不需要写代码，给输入值，看程序是否能够输出期望的值。
+			2. 白盒测试：需要写代码的。关注程序具体的执行流程。
+
+	* Junit测试步骤：
+		1. 定义一个测试类(测试用例)
+			* 建议：
+				* 测试类名：被测试的类名Test		CalculatorTest
+				* 包名：xxx.xxx.xx.test		demo.test
+
+		2. 定义测试方法：可以独立运行
+			* 建议：
+				* 方法名：test测试的方法名		testAdd()  
+				* 返回值：void
+				* 参数列表：空参
+
+		3. 给方法加@Test
+		4. 导入junit依赖环境
+
+	* 判定结果：
+		* 红色：失败
+		* 绿色：成功
+		* 一般我们会使用断言操作来处理结果
+			* Assert.assertEquals(期望的结果,运算的结果);
+
+	* 补充：
+		* @Before:
+			* 修饰的方法会在测试方法之前被自动执行
+		* @After:
+			* 修饰的方法会在测试方法执行之后自动被执行
+	比如创建了一个Calculator类
+	package demo.junit;
+	public class Calculator {
+
+		public int add (int a , int b){
+			return a + b;
+		}
+
+		public int sub (int a , int b){
+			return a - b;
+		}
+	}
+
+	那么测试类应该写为如下：
+	package demo.test;
+	import demo.junit.Calculator;
+	import org.junit.After;
+	import org.junit.Assert;
+	import org.junit.Before;
+	import org.junit.Test;
+	public class CalculatorTest {
+		@Before
+		public void init(){
+			System.out.println("init ... ");
+		}
+
+		@After
+		public void close(){
+			System.out.println("close ... ");
+		}
+
+		@Test
+		public void testAdd(){
+			System.out.println("testAdd");
+			Calculator c = new Calculator();
+			int result = c.add(1,2);
+			Assert.assertEquals(3,result);
+		}
+
+		@Test
+		public void testSub(){
+			System.out.println("testSub");
+			Calculator c = new Calculator();
+			int result = c.sub(5,3);
+			Assert.assertEquals(2,result);
+		}
+
+	}
+
+	
+反射
+	reflection，Java的反射是指程序在运行期可以拿到一个对象的所有信息。
+	在运行状态中，对于任意一个类，都能够知道这个类的所有属性和方法。
+	与Java反射相关的类如下：
+		Class类：代表类的实体，在运行的Java应用程序中表示类和接口
+		Field类：代表类的成员变量（成员变量也称为类的属性）
+		Method类：代表类的方法
+		Constructor类：代表类的构造方法
+	Class类：获取Class类的对象，该对象就是我们定义的某个class，比如Person类、Student类
+		我们借用廖雪峰老师的话来说一下class
+			除了int等基本类型外，Java的其他类型全部都是class。仔细思考，我们可以得出结论：class（包括interface）的本质是数据类型（Type）。
+			而class是由JVM在执行过程中动态加载的。JVM在第一次读取到一种class类型时，将其加载进内存。
+			每加载一种class，JVM就为其创建一个Class类型的实例，并关联起来。注意：这里的Class类型是一个名叫Class的class。它长这样：
+			public final class Class {
+				private Class() {}
+			}
+			以String类为例，当JVM加载String类时，它首先读取String.class文件到内存，然后，为String类创建一个Class实例并关联起来：
+			Class cls = new Class(String);
+			这个Class实例是JVM内部创建的，如果我们查看JDK源码，可以发现Class类的构造方法是private，只有JVM能创建Class实例，我们自己的Java程序是无法创建Class实例的。
+		获取Class的对象的方式：
+			1. Class.forName("全类名")：将字节码文件加载进内存，返回Class对象
+				* 多用于配置文件，将类名定义在配置文件中。读取文件，加载类
+			2. 类名.class：通过类名的属性class获取
+				* 多用于参数的传递
+			3. 对象.getClass()：getClass()方法在Object类中定义着。
+				* 多用于对象的获取字节码的方式
+			* 结论：
+				同一个字节码文件(*.class)在一次程序运行过程中，只会被加载一次，不论通过哪一种方式获取的Class对象都是同一个，地址相同。
+		通过Class的对象来获取成员变量、构造方法、成员方法和全类名
+			1. 获取成员变量们
+				* Field[] getFields() ：获取所有public修饰的成员变量
+				* Field getField(String name)   获取指定名称的 public修饰的成员变量
+				* Field[] getDeclaredFields()  获取所有的成员变量，不考虑修饰符
+				* Field getDeclaredField(String name)  
+			2. 获取构造方法们
+				* Constructor<?>[] getConstructors()  
+				* Constructor<T> getConstructor(类<?>... parameterTypes)  
+				* Constructor<T> getDeclaredConstructor(类<?>... parameterTypes)  
+				* Constructor<?>[] getDeclaredConstructors()  
+			3. 获取成员方法们：
+				* Method[] getMethods()  
+				* Method getMethod(String name, 类<?>... parameterTypes)  
+				* Method[] getDeclaredMethods()  
+				* Method getDeclaredMethod(String name, 类<?>... parameterTypes)  
+			4. 获取全类名	
+				* String getName()  
+	Field类：成员变量
+		1. 设置值
+			* void set(Object obj, Object value)  
+		2. 获取值
+			* get(Object obj) 
+		3. 忽略访问权限修饰符的安全检查
+			* setAccessible(true):暴力反射
+	Constructor类:构造方法
+		创建对象
+			* T newInstance(Object... initargs)  
+			* 如果使用空参数构造方法创建对象，操作可以简化：Class对象的newInstance方法
+	Method类：方法对象
+		* 执行方法：
+			* Object invoke(Object obj, Object... args)  
+		* 获取方法名称：
+			* String getName:获取方法名
+
+注解
+	注解（Annotation）是放在Java源码的类、方法、字段、参数前的一种特殊“注释”。
+	注解是JDK1.5及以后版本引入的一个特性，与类、接口、枚举是在同一个层次。它可以声明在类、方法等的前面，用来对这些元素进行说明，注释。
+	与注释不同的是，注释会被编译器直接忽略，注解则可以被编译器打包进入class文件，因此，注解是一种用作标注的“元数据”。
+	从JVM的角度看，注解本身对代码逻辑没有任何影响，如何使用注解完全由工具决定。
+	Java的注解可以分为三类：
+		第一类是由编译器使用的注解，例如：
+			@Override：让编译器检查该方法是否正确地实现了覆写；
+			@SuppressWarnings：告诉编译器忽略此处代码产生的警告。
+			@Deprecated：该注解标注的内容，表示已过时
+			这类注解不会被编译进入.class文件，它们在编译后就被编译器扔掉了。
+		第二类是由工具处理.class文件使用的注解，
+			比如有些工具会在加载class的时候，对class做动态修改，实现一些特殊的功能。
+			这类注解会被编译进入.class文件，但加载结束后并不会存在于内存中。这类注解只被一些底层库使用，一般我们不必自己处理。
+		第三类是在程序运行期能够读取的注解，它们在加载后一直存在于JVM中，这也是最常用的注解。
+			例如，一个配置了@PostConstruct的方法会在调用构造方法后自动被调用（这是Java代码读取该注解实现的功能，JVM并不会识别该注解）。
+	自定义注解：
+		格式：
+			元注解
+			public @interface 注解名称{
+				属性列表;
+			}
+			其中，必须设置@Target和@Retention，@Retention一般设置为RUNTIME，因为我们自定义的注解通常要求在运行期读取。
+		注解本质上就是一个接口，该接口默认继承Annotation接口
+			public interface MyAnno extends java.lang.annotation.Annotation {}
+		属性的返回值类型有下列取值
+			基本数据类型
+			String
+			枚举
+			注解
+			以上类型的数组
+		定义了属性，在使用时需要给属性赋值
+			1. 如果定义属性时，使用default关键字给属性默认初始化值，则使用注解时，可以不进行属性的赋值。
+			2. 如果只有一个属性需要赋值，并且属性的名称是value，则value可以省略，直接定义值即可。
+			3. 数组赋值时，值使用{}包裹。如果数组中只有一个值，则{}可以省略
+			
+			比如：
+			public class Hello {
+				@Check(min=0, max=100, value=55)
+				public int n;
+
+				@Check(value=99)
+				public int p;
+
+				@Check(99) // @Check(value=99)
+				public int x;
+
+				@Check
+				public int y;
+			}
+			@Check就是一个注解。第一个@Check(min=0, max=100, value=55)明确定义了三个参数，
+			第二个@Check(value=99)只定义了一个value参数，它实际上和@Check(99)是完全一样的，
+			最后一个@Check表示所有参数都使用默认值。
+		元注解：
+			有一些注解可以修饰其他注解，这些注解就称为元注解（meta annotation）
+			@Target：描述注解能够作用的位置
+				ElementType.TYPE：可以作用于类上
+				ElementType.METHOD：可以作用于方法上
+				ElementType.FIELD：可以作用于成员变量上
+				ElementType.CONSTRUCTOR：可以作用在构造方法上
+				ElementType.PARAMETER：可以作用在方法的参数上
+			@Retention：定义了Annotation的生命周期
+				RetentionPolicy.SOURCE：仅编译期
+				RetentionPolicy.CLASS：仅class文件
+				RetentionPolicy.RUNTIME：运行期
+				SOURCE类型的注解主要由编译器使用，因此我们一般只使用，不编写。
+				CLASS类型的注解主要由底层工具库使用，涉及到class的加载，一般我们很少用到。
+				只有RUNTIME类型的注解不但要使用，还经常需要编写。
+			@Inherited：定义子类是否可继承父类定义的Annotation。
+				@Inherited仅针对@Target(ElementType.TYPE)类型的annotation有效，并且仅针对class的继承，对interface的继承无效。
+			@Documented：描述注解是否被抽取到api文档中
+			@Repeatable：描述这个元注解修饰的Annotation是否可重复。
+	使用注解：
+		判断某个注解是否存在于Class、Field、Method或Constructor：
+			Class.isAnnotationPresent(Class)
+			Field.isAnnotationPresent(Class)
+			Method.isAnnotationPresent(Class)
+			Constructor.isAnnotationPresent(Class)
+		使用反射API读取Annotation：
+			Class.getAnnotation(Class)
+			Field.getAnnotation(Class)
+			Method.getAnnotation(Class)
+			Constructor.getAnnotation(Class)
+	例子：
+		/**
+		 * 我们来看一个@Range注解，我们希望用它来定义一个String字段的规则：字段长度满足@Range的参数定以
+		 */
+		package demo.annotation;
+
+		import java.lang.annotation.ElementType;
+		import java.lang.annotation.Retention;
+		import java.lang.annotation.RetentionPolicy;
+		import java.lang.annotation.Target;
+		
+		@Retention(RetentionPolicy.RUNTIME)
+		@Target(ElementType.FIELD)
+		public @interface Range {
+			int min() default 0;
+			int max() default 255;
+		}
+		/**
+		 * 在Person这个JavaBean中使用Range注解
+		 */
+		package demo.annotation;
+
+		public class Person {
+			@Range(min = 3,max = 10)
+			public String name;
+			public int age;
+			@Range(min = 5,max = 20)
+			public String address;
+
+			@Override
+			public String toString() {
+				return "Person{" +
+						"name='" + name + '\'' +
+						", age=" + age +
+						'}';
+			}
+		}
+		//写一个测试类
+		package demo.annotation;
+
+		import org.junit.Assert;
+		import org.junit.Test;
+		import java.lang.reflect.Field;
+		import java.util.ArrayList;
+
+		public class PersonTest {
+
+			@Test
+			public void testPersonRange() throws Exception {
+				/**
+				 * 测试 isAnnotationPresent()和getAnnotation()
+				 */
+				Field name = Person.class.getField("name");
+				Field age = Person.class.getField("age");
+				Field address = Person.class.getField("address");
+				/**判断某个注解是否存在于Class、Field、Method或Constructor
+				 * Field.isAnnotationPresent(Class)
+				 * 这里判断 Range 注解是否存在于 Field 中*/
+				Assert.assertEquals(true,name.isAnnotationPresent(Range.class));
+				Assert.assertEquals(false,age.isAnnotationPresent(Range.class));
+				Assert.assertEquals(true,address.isAnnotationPresent(Range.class));
+
+				/**通过Class、Field、Method或Constructor来获取修饰它的注解
+				 * Field.getAnnotation(Class)
+				 *这里我们获取修饰 Field 的注解 Range */
+				Range rangeName = name.getAnnotation(Range.class);
+				System.out.println(rangeName);
+				Assert.assertEquals(3,rangeName.min());
+				Assert.assertEquals(10,rangeName.max());
+				Range rangeAddress = address.getAnnotation(Range.class);
+				System.out.println(rangeAddress);
+				Assert.assertEquals(5,rangeAddress.min());
+				Assert.assertEquals(20,rangeAddress.max());
+				Range rangeAge = age.getAnnotation(Range.class);
+				Assert.assertEquals(null,rangeAge);
+			}
+
+			/**这里，我们编写一个Person实例的检查方法check，它可以检查Person实例的String字段长度是否满足@Range的定义*/
+			public ArrayList<String> check(Person person) throws Exception{
+				ArrayList<String> fieldList = new ArrayList<>();
+				// 遍历所有Field
+				for (Field field : person.getClass().getFields()) {
+					// 获取Field定义的@Range
+					Range range = field.getAnnotation(Range.class);
+					// 如果@Range存在
+					if (range != null){
+						// 获取Field的值
+						Object fieldValue = field.get(person);
+						// 如果Field的值是String，因为我们只对Person类中String类型的字段修饰了range注解
+						if (fieldValue instanceof String){
+							//将Object强转为String
+							String value = (String)fieldValue;
+							//不符合Range注解的判断条件
+							if (value.length() < range.min() || value.length() > range.max()){
+								System.out.println("Illegal field: " + field.getName());
+								fieldList.add(field.getName());
+							}
+						}
+					}
+					//如果@Range不存在，那么该Field没有注解
+					else{
+						System.out.println("field do not have Annotation: : " + field.getName());
+					}
+				}
+				System.out.println(fieldList);
+				return fieldList;
+			}
+
+			@Test
+			public void testCheck() throws Exception {
+				Person person = new Person();
+				person.name = "tom";
+				person.age = 23;
+				person.address = "china beijing beijing";
+				ArrayList actualList = check(person);
+				//我们期望得到的结果是["address"]
+				ArrayList expectedList = new ArrayList();
+				expectedList.add("address");
+				//断言通过，说明我们的测试通过
+				Assert.assertEquals(expectedList,actualList);
+			}
+
+		}
+		
+		输出：
+			@demo.annotation.Range(max=10, min=3)
+			@demo.annotation.Range(max=20, min=5)
+			
+			field do not have Annotation: : age
+			Illegal field: address
+			[address]			
+		
+JDBC：Java数据库连接，Java DataBase Connectivity。
+	其实JDBC是官方（sun公司）定义的一套操作所有关系型数据库的规则，即接口。
+	各个数据库厂商去实现这套接口，提供数据库驱动jar包。我们可以使用这套接口（JDBC）编程，真正执行的代码是驱动jar包中的实现类。
+	在java操作mysql数据库前，首先要下载mysql的jar包，然后将jar包导入项目的libs目录下，然后右键libs，Add As Library
+	一个最简单的JDBC操作的代码：
+		package demo.jdbcTest;
+
+		import java.sql.Connection;
+		import java.sql.DriverManager;
+		import java.sql.SQLException;
+		import java.sql.Statement;
+
+		public class JdbcBaseTest {
+			public static void main(String[] args) {
+				Connection conn = null;
+				Statement stmt = null;
+				try {
+					//1.注册驱动
+					Class.forName("com.mysql.jdbc.Driver");
+					//2.获取数据库连接对象
+					conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/db4", "root", "123456");
+					//3.定义sql语句
+					String sql = "update account set balance = 500 where id = 1";
+					//4.获取执行sql的对象 Statement
+					stmt = conn.createStatement();
+					//5.执行sql
+					int count = stmt.executeUpdate(sql);
+					//6.处理结果
+					System.out.println(count);
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}finally {
+					//8.释放资源
+					if (stmt != null){
+						try {
+							stmt.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+					if (conn != null){
+						try {
+							conn.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+			}
+		}
+	解释一下JDBC中的重要对象：
+		一. DriverManager：驱动管理对象
+			1. 注册驱动：告诉程序该使用哪一个数据库驱动jar
+				在DriverManager这个java类中，有一个方法registerDriver()用于注册数据库驱动
+				public static void registerDriver(java.sql.Driver driver)
+				而我们在实际注册驱动的时候用的是这一行代码
+				Class.forName("com.mysql.jdbc.Driver");
+				Class.forName()方法是我们加载字节码文件并返回Class对象的方法，也就是会返回com.mysql.jdbc.Driver这个类
+				而在com.mysql.jdbc.Driver类中，有一段静态代码块，静态代码块中包含了registerDriver()方法，
+				其实真正起作用的是java.sql.DriverManager中的registerDriver()方法。
+				看一下com.mysql.jdbc.Driver的代码：
+					package com.mysql.jdbc;
+
+					import java.sql.DriverManager;
+					import java.sql.SQLException;
+
+					public class Driver extends NonRegisteringDriver implements java.sql.Driver {
+						public Driver() throws SQLException {
+						}
+
+						static {
+							try {
+								DriverManager.registerDriver(new Driver());
+							} catch (SQLException var1) {
+								throw new RuntimeException("Can't register driver!");
+							}
+						}
+					}
+			2. 获取数据库连接
+				static Connection getConnection(String url, String user, String password)
+				参数：
+					url：指定连接的路径
+						语法：jdbc:mysql://ip地址(域名):端口号/数据库名称
+						例子：jdbc:mysql://localhost:3306/db3
+						细节：如果连接的是本机mysql服务器，并且mysql服务默认端口是3306，则url可以简写为：jdbc:mysql:///数据库名称
+					user：用户名
+					password：密码 
+		二. Connection：数据库连接对象
+			1. 获取执行sql 的对象
+				Statement createStatement()
+				PreparedStatement prepareStatement(String sql)
+			2. 管理事务
+				开启事务：setAutoCommit(boolean autoCommit) ：调用该方法设置参数为false，即开启事务
+				提交事务：commit()
+				回滚事务：rollback()			
+		三. Statement：执行sql的对象
+			1. 执行sql
+				boolean execute(String sql) ：可以执行任意的sql，这个方法不常用。
+				int executeUpdate(String sql) ：执行DML（insert、update、delete）语句、DDL(create，alter、drop)语句，但我们一般只执行insert、update、delete语句。
+					返回值：影响的行数，可以通过这个影响的行数判断DML语句是否执行成功 返回值>0的则执行成功，反之，则失败。
+				ResultSet executeQuery(String sql)  ：执行DQL（select)语句
+		四. ResultSet：结果集对象,封装查询结果
+			boolean next(): 游标向下移动一行，判断当前行是否是最后一行末尾(是否有数据)，如果是，则返回false，如果不是则返回true
+			getXxx(参数):获取数据
+				Xxx：代表数据类型   如： int getInt() ,	String getString()
+				参数：
+				int：代表列的编号,从1开始   如： getString(1)
+				String：代表列名称。 如： getDouble("balance")
+			比如：
+				while(rs.next()){
+					//获取数据
+					//6.2 获取数据，第一列的位置为1，不是0
+					int id = rs.getInt(1);
+					String name = rs.getString("name");
+					double balance = rs.getDouble(3);
+	
+					System.out.println(id + "---" + name + "---" + balance);
+				}
+		五. PreparedStatement：执行sql的对象
+			1. SQL注入问题：在拼接sql时，有一些sql的特殊关键字参与字符串的拼接。会造成安全性问题
+				输入用户随便，输入密码：a' or 'a' = 'a
+				sql：select * from user where username = 'fhdsjkf' and password = 'a' or 'a' = 'a' 
+			2. 解决sql注入问题：使用PreparedStatement对象来解决
+			3. 预编译的SQL：参数使用?作为占位符
+			4. 好处：可以防止SQL注入、效率更高。
+			比如：
+				//定义sql
+				String sql1 = "update account set balance = balance - ? where id = ?";
+				//获取执行sql对象
+				PreparedStatement pstmt1 = conn.prepareStatement(sql1);
+				//设置参数，注意参数位置是从1开始的
+				pstmt1.setDouble(1,500);
+				pstmt1.setInt(2,1);
+				//执行sql，执行的sql语句其实是："update account set balance = balance - 500 where id = 1"
+				pstmt1.executeUpdate();
+	这里写了一个JDBCUtil的工具类，可以方便我们以后进行数据库的连接和数据库资源的释放。
+	其中配置文件jdbc.properties在src目录下，其内容为：
+		url=jdbc:mysql://localhost:3306/db4
+		user=root
+		password=123456
+		driver=com.mysql.jdbc.Driver
+	JDBCUtils代码如下：
+		package demo.jdbcTest;
+
+		import java.io.FileReader;
+		import java.io.IOException;
+		import java.net.URL;
+		import java.sql.*;
+		import java.util.Properties;
+
+		/**
+		 * JDBC工具类
+		 */
+		public class JDBCUtils {
+			private static String url;
+			private static String user;
+			private static String password;
+			private static String driver;
+			/**
+			 * 文件的读取，只需要读取一次即可拿到这些值。使用静态代码块
+			 */
+			static{
+				//读取资源文件，获取值。
+				try {
+					//1. 创建Properties集合类。
+					Properties pro = new Properties();
+					//获取src路径下的文件的方式--->ClassLoader 类加载器
+					ClassLoader classLoader = JDBCUtils.class.getClassLoader();
+					URL res  = classLoader.getResource("jdbc.properties");
+					String path = res.getPath();
+					// System.out.println(path);路径为: /D:/1_Code/java/javaSE/vedio/out/production/vedio/jdbc.properties
+					//2. 加载文件
+					pro.load(new FileReader(path));
+					//3. 获取数据，赋值
+					url = pro.getProperty("url");
+					user = pro.getProperty("user");
+					password = pro.getProperty("password");
+					driver = pro.getProperty("driver");
+					//4. 注册驱动
+					Class.forName(driver);
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+
+
+			/**
+			 * 获取连接
+			 * @return 连接对象
+			 */
+			public static Connection getConnection() throws SQLException {
+
+				return DriverManager.getConnection(url, user, password);
+			}
+
+			/**
+			 * 释放资源
+			 * @param stmt
+			 * @param conn
+			 */
+			public static void close(Statement stmt,Connection conn){
+				if( stmt != null){
+					try {
+						stmt.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+
+				if( conn != null){
+					try {
+						conn.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+
+			/**
+			 * 释放资源
+			 * @param rs
+			 * @param stmt
+			 * @param conn
+			 */
+			public static void close(ResultSet rs,Statement stmt, Connection conn){
+				if( rs != null){
+					try {
+						rs.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+
+				if( stmt != null){
+					try {
+						stmt.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+
+				if( conn != null){
+					try {
+						conn.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+		}
+
+mysql事务和JDBC实现事务
+	一、事务的基本介绍
+		1. 概念：
+		如果一个包含多个步骤的业务操作，被事务管理，那么这些操作要么同时成功，要么同时失败。
+
+		2. 操作：
+			1. 开启事务： start transaction;
+			2. 回滚：rollback;
+			3. 提交：commit;
+		3. 例子：张三给李四转账500元的事务
+			CREATE TABLE account (
+			id INT PRIMARY KEY AUTO_INCREMENT,
+			NAME VARCHAR(10),
+			balance DOUBLE
+			);
+			-- 添加数据
+			INSERT INTO account (NAME, balance) VALUES ('zhangsan', 1000), ('lisi', 1000);
+			SELECT * FROM account;
+			UPDATE account SET balance = 1000;
+
+			-- 张三给李四转账 500 元
+			-- 0. 开启事务
+			START TRANSACTION;
+			-- 1. 张三账户 -500
+			UPDATE account SET balance = balance - 500 WHERE NAME = 'zhangsan';
+			-- 2. 李四账户 +500
+			UPDATE account SET balance = balance + 500 WHERE NAME = 'lisi';
+			-- 发现执行没有问题，提交事务
+			COMMIT;
+			-- 发现出问题了，回滚事务
+			ROLLBACK;
+		4. MySQL数据库中事务默认自动提交
+		事务提交的两种方式：
+			自动提交：
+			mysql就是自动提交的
+			一条DML(增删改)语句会自动提交一次事务。
+		手动提交：
+			Oracle 数据库默认是手动提交事务
+			需要先开启事务，再提交
+			查看事务的默认提交方式：SELECT @@autocommit; -- 1 代表自动提交 0 代表手动提交
+			修改默认提交方式： set @@autocommit = 0;
+
+	二、事务的四大特征：
+		1. 原子性：是不可分割的最小操作单位，要么同时成功，要么同时失败。
+		2. 持久性：当事务提交或回滚后，数据库会持久化的保存数据。
+		3. 隔离性：多个事务之间。相互独立。
+		4. 一致性：事务操作前后，数据总量不变
+	三、 事务的隔离级别（了解）
+		概念：多个事务之间隔离的，相互独立的。但是如果多个事务操作同一批数据，则会引发一些问题，设置不同的隔离级别就可以解决这些问题。
+		存在问题：
+			1. 脏读：一个事务，读取到另一个事务中没有提交的数据
+			2. 不可重复读(虚读)：在同一个事务中，两次读取到的数据不一样。
+			3. 幻读：一个事务操作(DML)数据表中所有记录，另一个事务添加了一条数据，则第一个事务查询不到自己的修改。
+		隔离级别：
+			1. read uncommitted：读未提交
+				产生的问题：脏读、不可重复读、幻读
+			2. read committed：读已提交 （Oracle默认）
+				产生的问题：不可重复读、幻读
+			3. repeatable read：可重复读 （MySQL默认）
+				产生的问题：幻读
+			4. serializable：串行化
+				可以解决所有的问题
+
+		注意：隔离级别从小到大安全性越来越高，但是效率越来越低
+		数据库查询隔离级别：
+		select @@tx_isolation;
+		数据库设置隔离级别：
+		set global transaction isolation level 级别字符串;
+		比如：
+		set global transaction isolation level read uncommitted;
+	四、java实现事务
+		package demo.jdbcTest;
+
+		import java.sql.Connection;
+		import java.sql.PreparedStatement;
+		import java.sql.SQLException;
+
+		public class JdbcCommitTest {
+			public static void main(String[] args) {
+				Connection conn = null;
+				PreparedStatement pstmt1 = null;
+				PreparedStatement pstmt2 = null;
+				try {
+					//1.获取连接
+					conn = JDBCUtils.getConnection();
+					//开启事务
+					conn.setAutoCommit(false);
+					//2.定义sql
+					//2.1 张三 - 500
+					String sql1 = "update account set balance = balance - ? where id = ?";
+					//2.2 李四 + 500
+					String sql2 = "update account set balance = balance + ? where id = ?";
+					//3.获取执行sql对象
+					pstmt1 = conn.prepareStatement(sql1);
+					pstmt2 = conn.prepareStatement(sql2);
+					//4. 设置参数
+					pstmt1.setDouble(1,500);
+					pstmt1.setInt(2,1);
+					pstmt2.setDouble(1,500);
+					pstmt2.setInt(2,2);
+					//5.执行sql
+					pstmt1.executeUpdate();
+					// 手动制造异常
+					//int i = 3/0;
+					pstmt2.executeUpdate();
+					//提交事务
+					conn.commit();
+				} catch (Exception e) {
+					//事务回滚
+					try {
+						if(conn != null) {
+							conn.rollback();
+						}
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+					e.printStackTrace();
+				}finally {
+					JDBCUtils.close(pstmt1,conn);
+					JDBCUtils.close(pstmt2,null);
+				}
+			}
+		}
+
+假如有一个表emp
+		DROP TABLE IF EXISTS `emp`;
+		CREATE TABLE `emp`  (
+		  `id` int(11) NOT NULL,
+		  `ename` varchar(50) CHARACTER SET gbk COLLATE gbk_chinese_ci NULL DEFAULT NULL,
+		  `job_id` int(11) NULL DEFAULT NULL,
+		  `mgr` int(11) NULL DEFAULT NULL,
+		  `joindate` date NULL DEFAULT NULL,
+		  `salary` decimal(7, 2) NULL DEFAULT NULL,
+		  `bonus` decimal(7, 2) NULL DEFAULT NULL,
+		  `dept_id` int(11) NULL DEFAULT NULL,
+		  PRIMARY KEY (`id`) USING BTREE,
+		  INDEX `emp_jobid_ref_job_id_fk`(`job_id`) USING BTREE,
+		  INDEX `emp_deptid_ref_dept_id_fk`(`dept_id`) USING BTREE,
+		  CONSTRAINT `emp_deptid_ref_dept_id_fk` FOREIGN KEY (`dept_id`) REFERENCES `dept` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+		  CONSTRAINT `emp_jobid_ref_job_id_fk` FOREIGN KEY (`job_id`) REFERENCES `job` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+		) ENGINE = InnoDB CHARACTER SET = gbk COLLATE = gbk_chinese_ci ROW_FORMAT = Dynamic;
+		向表中插入14条数据
+		INSERT INTO `emp` VALUES (1001, '孙悟空', 4, 1004, '2000-12-17', 8000.00, NULL, 20);
+		INSERT INTO `emp` VALUES (1002, '卢俊义', 3, 1006, '2001-02-20', 16000.00, 3000.00, 30);
+		INSERT INTO `emp` VALUES (1003, '林冲', 3, 1006, '2001-02-22', 12500.00, 5000.00, 30);
+		INSERT INTO `emp` VALUES (1004, '唐僧', 2, 1009, '2001-04-02', 29750.00, NULL, 20);
+		INSERT INTO `emp` VALUES (1005, '李逵', 4, 1006, '2001-09-28', 12500.00, 14000.00, 30);
+		INSERT INTO `emp` VALUES (1006, '宋江', 2, 1009, '2001-05-01', 28500.00, NULL, 30);
+		INSERT INTO `emp` VALUES (1007, '刘备', 2, 1009, '2001-09-01', 24500.00, NULL, 10);
+		INSERT INTO `emp` VALUES (1008, '猪八戒', 4, 1004, '2007-04-19', 30000.00, NULL, 20);
+		INSERT INTO `emp` VALUES (1009, '罗贯中', 1, NULL, '2001-11-17', 50000.00, NULL, 10);
+		INSERT INTO `emp` VALUES (1010, '吴用', 3, 1006, '2001-09-08', 15000.00, 0.00, 30);
+		INSERT INTO `emp` VALUES (1011, '沙僧', 4, 1004, '2007-05-23', 11000.00, NULL, 20);
+		INSERT INTO `emp` VALUES (1012, '李逵', 4, 1006, '2001-12-03', 9500.00, NULL, 30);
+		INSERT INTO `emp` VALUES (1013, '小白龙', 4, 1004, '2001-12-03', 30000.00, NULL, 20);
+		INSERT INTO `emp` VALUES (1014, '关羽', 4, 1007, '2002-01-23', 13000.00, NULL, 10);
+	那么我们在java中创建一个Emp的JavaBean
+		package demo.jdbcTest;
+
+		import java.util.Date;
+
+		/**
+		 * 封装Emp表数据的JavaBean
+		 */
+		public class Emp {
+			private int id;
+			private String ename;
+			private int job_id;
+			private int mgr;
+			private Date joindate;
+			private double salary;
+			private double bonus;
+			private int dept_id;
+
+
+			public int getId() {
+				return id;
+			}
+
+			public void setId(int id) {
+				this.id = id;
+			}
+
+			public String getEname() {
+				return ename;
+			}
+
+			public void setEname(String ename) {
+				this.ename = ename;
+			}
+
+			public int getJob_id() {
+				return job_id;
+			}
+
+			public void setJob_id(int job_id) {
+				this.job_id = job_id;
+			}
+
+			public int getMgr() {
+				return mgr;
+			}
+
+			public void setMgr(int mgr) {
+				this.mgr = mgr;
+			}
+
+			public Date getJoindate() {
+				return joindate;
+			}
+
+			public void setJoindate(Date joindate) {
+				this.joindate = joindate;
+			}
+
+			public double getSalary() {
+				return salary;
+			}
+
+			public void setSalary(double salary) {
+				this.salary = salary;
+			}
+
+
+			public int getDept_id() {
+				return dept_id;
+			}
+
+			public void setDept_id(int dept_id) {
+				this.dept_id = dept_id;
+			}
+
+
+			public double getBonus() {
+				return bonus;
+			}
+
+			public void setBonus(double bonus) {
+				this.bonus = bonus;
+			}
+
+			@Override
+			public String toString() {
+				return "Emp{" +
+						"id=" + id +
+						", ename='" + ename + '\'' +
+						", job_id=" + job_id +
+						", mgr=" + mgr +
+						", joindate=" + joindate +
+						", salary=" + salary +
+						", bonus=" + bonus +
+						", dept_id=" + dept_id +
+						'}';
+			}
+		}
+	我们使用java查询emp表，并且将 查询结果封装为Emp对象的数组 ArrayList<Emp>，数组中每个元素为一个Emp对象
+		package demo.jdbcTest;
+
+		import java.sql.*;
+		import java.util.ArrayList;
+		import java.util.List;
+
+		public class JdbcQueryToBean {
+		/**
+		 * * 定义一个方法，查询emp表的数据将其封装为对象，然后装载集合，返回。
+		 */
+
+			public static void main(String[] args) {
+				List<Emp> list = new JdbcQueryToBean().findAll();
+				System.out.println(list);
+				System.out.println(list.size());
+			}
+
+			/**
+			 * 查询所有emp对象
+			 * @return List<Emp> list
+			 */
+			public List<Emp> findAll() {
+				Connection conn = null;
+				Statement stmt = null;
+				ResultSet rs = null;
+				List<Emp> list = null;
+				try {
+					//1.注册驱动
+					//2.获取连接
+					conn = JDBCUtils.getConnection();
+					//3.定义sql
+					String sql = "select * from emp";
+					//4.获取执行sql的对象
+					stmt = conn.createStatement();
+					//5.执行sql
+					rs = stmt.executeQuery(sql);
+					//6.遍历结果集，封装对象，装载集合
+					Emp emp = null;
+					list = new ArrayList<Emp>();
+					while (rs.next()) {
+						//获取数据
+						int id = rs.getInt("id");
+						String ename = rs.getString("ename");
+						int job_id = rs.getInt("job_id");
+						int mgr = rs.getInt("mgr");
+						Date joindate = rs.getDate("joindate");
+						double salary = rs.getDouble("salary");
+						double bonus = rs.getDouble("bonus");
+						int dept_id = rs.getInt("dept_id");
+						// 创建emp对象,并赋值
+						emp = new Emp();
+						emp.setId(id);
+						emp.setEname(ename);
+						emp.setJob_id(job_id);
+						emp.setMgr(mgr);
+						emp.setJoindate(joindate);
+						emp.setSalary(salary);
+						emp.setBonus(bonus);
+						emp.setDept_id(dept_id);
+						//装载集合
+						list.add(emp);
+					}
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}finally {
+					JDBCUtils.close(rs,stmt,conn);
+				}
+				return list;
+			}
+		}
+	输出结果如下：
+		[Emp{id=1001, ename='孙悟空', job_id=4, mgr=1004, joindate=2000-12-17, salary=8000.0, bonus=0.0, dept_id=20}, 
+		Emp{id=1002, ename='卢俊义', job_id=3, mgr=1006, joindate=2001-02-20, salary=16000.0, bonus=3000.0, dept_id=30}, 
+		Emp{id=1003, ename='林冲', job_id=3, mgr=1006, joindate=2001-02-22, salary=12500.0, bonus=5000.0, dept_id=30}, 
+		Emp{id=1004, ename='唐僧', job_id=2, mgr=1009, joindate=2001-04-02, salary=29750.0, bonus=0.0, dept_id=20}, 
+		Emp{id=1005, ename='李逵', job_id=4, mgr=1006, joindate=2001-09-28, salary=12500.0, bonus=14000.0, dept_id=30}, 
+		Emp{id=1006, ename='宋江', job_id=2, mgr=1009, joindate=2001-05-01, salary=28500.0, bonus=0.0, dept_id=30}, 
+		Emp{id=1007, ename='刘备', job_id=2, mgr=1009, joindate=2001-09-01, salary=24500.0, bonus=0.0, dept_id=10}, 
+		Emp{id=1008, ename='猪八戒', job_id=4, mgr=1004, joindate=2007-04-19, salary=30000.0, bonus=0.0, dept_id=20}, 
+		Emp{id=1009, ename='罗贯中', job_id=1, mgr=0, joindate=2001-11-17, salary=50000.0, bonus=0.0, dept_id=10}, 
+		Emp{id=1010, ename='吴用', job_id=3, mgr=1006, joindate=2001-09-08, salary=15000.0, bonus=0.0, dept_id=30}, 
+		Emp{id=1011, ename='沙僧', job_id=4, mgr=1004, joindate=2007-05-23, salary=11000.0, bonus=0.0, dept_id=20}, 
+		Emp{id=1012, ename='李逵', job_id=4, mgr=1006, joindate=2001-12-03, salary=9500.0, bonus=0.0, dept_id=30}, 
+		Emp{id=1013, ename='小白龙', job_id=4, mgr=1004, joindate=2001-12-03, salary=30000.0, bonus=0.0, dept_id=20}, 
+		Emp{id=1014, ename='关羽', job_id=4, mgr=1007, joindate=2002-01-23, salary=13000.0, bonus=0.0, dept_id=10}]
+		14
+		
+数据库连接池
+	数据库连接池其实就是一个容器(集合)，存放数据库连接的容器。
+	当系统初始化好后，容器被创建，容器中会申请一些连接对象，当用户来访问数据库时，从容器中获取连接对象，用户访问完之后，会将连接对象归还给容器。
+	好处：
+		1. 节约资源
+		2. 用户访问高效
+	实现：
+		1. 标准接口：DataSource   javax.sql包下的
+			获取连接：getConnection()
+			归还连接：Connection.close()。如果连接对象Connection是从连接池中获取的，那么调用Connection.close()方法，则不会再关闭连接了。而是归还连接
+
+		2. 一般我们不去实现它，有数据库厂商来实现
+			1. C3P0：数据库连接池技术
+			2. Druid：数据库连接池实现技术，由阿里巴巴提供的
+	C3P0
+		需要将两个jar导入到libs中，c3p0-0.9.5.2.jar 和 mchange-commons-java-0.2.12.jar
+		还需要在src下定义配置文件： c3p0-config.xml
+			<c3p0-config>
+				<!-- 使用默认的配置读取连接池对象 -->
+				<default-config>
+					<!--  连接参数 -->
+					<property name="driverClass">com.mysql.jdbc.Driver</property>
+					<property name="jdbcUrl">jdbc:mysql://localhost:3306/db4</property>
+					<property name="user">root</property>
+					<property name="password">123456</property>
+
+					<!-- 连接池参数 -->
+					<property name="initialPoolSize">5</property>
+					<property name="maxPoolSize">10</property>
+					<property name="checkoutTimeout">3000</property>
+				</default-config>
+
+				<named-config name="other">
+					<!--  连接参数 -->
+					<property name="driverClass">com.mysql.jdbc.Driver</property>
+					<property name="jdbcUrl">jdbc:mysql://localhost:3306/db4</property>
+					<property name="user">root</property>
+					<property name="password">123456</property>
+
+					<!-- 连接池参数 -->
+					<property name="initialPoolSize">5</property>
+					<property name="maxPoolSize">8</property>
+					<property name="checkoutTimeout">1000</property>
+				</named-config>
+			</c3p0-config>
+		写了一个测试类：
+			package demo.jdbcTest;
+
+			import org.junit.Test;
+			import javax.sql.DataSource;
+			import java.sql.Connection;
+			import java.sql.SQLException;
+			import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+			public class C3P0TestDemo {
+				@Test
+				public void testDefault() throws SQLException {
+					DataSource ds1 = new ComboPooledDataSource();
+					//默认配置中我们设置了 maxPoolSize 为10，因此可以取10个连接
+					for (int i = 1; i <= 10 ; i++) {
+						Connection conn = ds1.getConnection();
+						System.out.println(conn);
+					}
+				}
+				@Test
+				public void testOther() throws SQLException {
+					DataSource ds1 = new ComboPooledDataSource("other");
+					//other的配置中我们设置了 maxPoolSize 为8，因此可以取10个连接会出错
+					for (int i = 1; i <= 10 ; i++) {
+						Connection conn = ds1.getConnection();
+						System.out.println(conn);
+					}
+				}
+			}
+		输出结果中，我们从default的连接池中取出了10个数据库连接，但从other的连接池中我们取10个连接失败，最多只能取出8个连接
+		
+	Druid
+		步骤：
+			1. 导入jar包 druid-1.0.9.jar
+			2. 定义配置文件：
+				是properties形式的
+				可以叫任意名称，可以放在任意目录下
+			3. 加载配置文件。Properties
+			4. 获取数据库连接池对象：通过工厂来来获取  DruidDataSourceFactory
+			5. 获取连接：getConnection
+		配置文件我们放在src下，叫 druid.properties，内容如下：
+			driverClassName=com.mysql.jdbc.Driver
+			url=jdbc:mysql://127.0.0.1:3306/db4
+			username=root
+			password=123456
+			initialSize=5
+			maxActive=10
+			maxWait=3000
+		写了一个测试类：
+			package demo.jdbcTest;
+
+			import org.junit.Test;
+
+			import javax.sql.DataSource;
+			import com.alibaba.druid.pool.DruidDataSourceFactory;
+			import java.io.InputStream;
+			import java.sql.Connection;
+			import java.util.Properties;
+
+			public class DruidTestDemo {
+				@Test
+				public void testDruid() throws Exception {
+					//加载配置文件
+					Properties pro = new Properties();
+					//通过类类加载器来获取 druid.properties，并通过 getResourceAsStream() 将该配置文件以输入流的方式获取
+					InputStream is = DruidTestDemo.class.getClassLoader().getResourceAsStream("druid.properties");
+					pro.load(is);
+					DataSource ds = DruidDataSourceFactory.createDataSource(pro);
+					//获取连接
+					Connection conn = ds.getConnection();
+					System.out.println(conn);
+
+				}
+			}
+		为了方便，我们创建一个JDBCUtilsByDruid来获取连接和关闭连接
+			package demo.jdbcTest;
+
+			import com.alibaba.druid.pool.DruidDataSourceFactory;
+			import javax.sql.DataSource;
+			import java.io.IOException;
+			import java.sql.Connection;
+			import java.sql.ResultSet;
+			import java.sql.SQLException;
+			import java.sql.Statement;
+			import java.util.Properties;
+
+			/**
+			 * Druid连接池的工具类
+			 */
+			public class JDBCUtilsByDruid {
+				//1.定义成员变量 DataSource
+				private static DataSource ds ;
+
+				static{
+					try {
+						//1.加载配置文件
+						Properties pro = new Properties();
+						pro.load(JDBCUtils.class.getClassLoader().getResourceAsStream("druid.properties"));
+						//2.获取DataSource
+						ds = DruidDataSourceFactory.createDataSource(pro);
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				/**
+				 * 获取连接
+				 */
+				public static Connection getConnection() throws SQLException {
+					return ds.getConnection();
+				}
+
+				/**
+				 * 释放资源
+				 */
+				public static void close(ResultSet rs , Statement stmt, Connection conn){
+					if(rs != null){
+						try {
+							rs.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+
+					if(stmt != null){
+						try {
+							stmt.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+
+					if(conn != null){
+						try {
+							conn.close();//归还连接
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+				public static void close(Statement stmt,Connection conn){
+				   /* if(stmt != null){
+						try {
+							stmt.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+
+					if(conn != null){
+						try {
+							conn.close();//归还连接
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}*/
+
+					close(null,stmt,conn);
+				}
+
+				/**
+				 * 获取连接池方法
+				 */
+				public static DataSource getDataSource(){
+					return  ds;
+				}
+			}
+		然后我们在上面的测试类中，添加一个测试方法通过Druid数据库连接池获取的连接对象给account表添加一条记录
+			@Test
+			public void testJDBCUtilsByDruid(){
+				/**
+				 * 实现 通过Druid数据库连接池获取的连接对象给account表添加一条记录
+				 */
+				Connection conn = null;
+				PreparedStatement pstm = null;
+				try {
+					conn = JDBCUtilsByDruid.getConnection();
+					String sql = "insert into account values(null,?,?)";
+					pstm = conn.prepareStatement(sql);
+					pstm.setString(1,"wangwu");
+					pstm.setDouble(2,3000);
+					int count = pstm.executeUpdate();
+					System.out.println(count);
+					Assert.assertEquals(1,count);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}finally {
+					JDBCUtilsByDruid.close(pstm,conn);
+				}
+			}
+
+Spring JDBC
+	Spring框架对JDBC的简单封装。提供了一个JDBCTemplate对象简化JDBC的开发
+	使用步骤：
+	1. 导入jar包
+		libs/spring-beans-5.0.0.RELEASE.jar
+		libs/spring-core-5.0.0.RELEASE.jar
+		libs/spring-jdbc-5.0.0.RELEASE.jar
+		libs/spring-tx-5.0.0.RELEASE.jar
+		libs/commons-logging-1.2.jar
+	2. 创建JdbcTemplate对象。依赖于数据源DataSource
+		JdbcTemplate template = new JdbcTemplate(ds);
+	3. 调用JdbcTemplate的方法来完成CRUD的操作
+		update():执行DML语句。增、删、改语句
+		queryForMap():查询结果将结果集封装为map集合，将列名作为key，将值作为value 将这条记录封装为一个map集合
+			注意：这个方法查询的结果集长度只能是1
+		queryForList():查询结果将结果集封装为list集合
+			注意：将每一条记录封装为一个Map集合，再将Map集合装载到List集合中
+		query():查询结果，将结果封装为JavaBean对象
+			query的参数：RowMapper
+				一般我们使用BeanPropertyRowMapper实现类。可以完成数据到JavaBean的自动封装
+				new BeanPropertyRowMapper<类型>(类型.class)
+		queryForObject()：查询结果，将结果封装为对象
+				一般用于聚合函数的查询
+	例子：我们还是使用 emp 表来进行下列操作
+		1. 我们使用JdbcTemplate来进行update、insert、delete
+		2. 查询id为1的记录，将其封装为Map集合
+		3. 查询所有记录，将其封装为List
+		4. 查询所有记录，将其封装为Emp对象的List集合
+		5. 查询总记录数
+	写一个测试类：
+		package demo.jdbcTest;
+
+		import org.junit.Assert;
+		import org.junit.Test;
+		import org.springframework.jdbc.core.BeanPropertyRowMapper;
+		import org.springframework.jdbc.core.JdbcTemplate;
+		import org.springframework.jdbc.core.RowMapper;
+
+		import java.sql.ResultSet;
+		import java.sql.SQLException;
+		import java.util.Date;
+		import java.util.List;
+		import java.util.Map;
+
+		public class JdbcTemplateTest {
+			private JdbcTemplate template = new JdbcTemplate(JDBCUtilsByDruid.getDataSource());
+
+			@Test
+			public void testBase(){
+				JdbcTemplate template = new JdbcTemplate(JDBCUtilsByDruid.getDataSource());
+				String sql = "update account set balance = 5000 where id = ?";
+				int count = template.update(sql, 3);
+				Assert.assertEquals(1,count);
+				System.out.println(count);
+			}
+
+			@Test
+			public void testUpdate(){
+				/**
+				 * 1. 修改1号数据的 salary 为 10000
+				 */
+				String sql = "update emp set salary = 10000 where id = 1001";
+				int count = template.update(sql);
+				Assert.assertEquals(1,count);
+				System.out.println(count);
+			}
+
+			@Test
+			public void testInsert(){
+				/**
+				 * 2. 添加一条记录
+				 */
+				String sql = "insert into emp(id,ename,dept_id) values(?,?,?)";
+				int count = template.update(sql, 1015, "tom", 10);
+				System.out.println(count);
+			}
+
+			@Test
+			public void testDelete(){
+				/**
+				 * 3.删除刚才添加的记录
+				 */
+				String sql = "delete from emp where id = ?";
+				int count = template.update(sql, 1015);
+				System.out.println(count);
+			}
+
+			@Test
+			public void testOneToMap(){
+				/**
+				 * 4.查询id为1001的记录，将其封装为Map集合
+				 * 注意：这个方法查询的结果集长度只能是1
+				 */
+				String sql = "select * from emp where id = ?";
+				Map<String, Object> map = template.queryForMap(sql, 1001);
+				//String sql = "select * from emp where id = ? or id = ?";
+				//Map<String, Object> map = template.queryForMap(sql, 1001,1002);
+				System.out.println(map);
+				//{id=1001, ename=孙悟空, job_id=4, mgr=1004, joindate=2000-12-17, salary=10000.00, bonus=null, dept_id=20}
+			}
+
+			@Test
+			public void testAllToList(){
+				/**
+				 * 5. 查询所有记录，将其封装为List
+				 */
+				String sql = "select * from emp";
+				List<Map<String, Object>> list = template.queryForList(sql);
+				for (Map<String, Object> stringObjectMap : list) {
+					System.out.println(stringObjectMap);
+				}
+				Assert.assertEquals(14,list.size());
+				System.out.println(list.size());
+			}
+
+			@Test
+			public void testAllToBean1(){
+				/**
+				 * 6. 查询所有记录，将其封装为Emp对象的List集合，不用这种方法，用下面的testAllToBean2
+				 */
+				String sql = "select * from emp";
+				List<Emp> list = template.query(sql, new RowMapper<Emp>() {
+					@Override
+					public Emp mapRow(ResultSet rs, int i) throws SQLException {
+						Emp emp = new Emp();
+						int id = rs.getInt("id");
+						String ename = rs.getString("ename");
+						int job_id = rs.getInt("job_id");
+						int mgr = rs.getInt("mgr");
+						Date joindate = rs.getDate("joindate");
+						double salary = rs.getDouble("salary");
+						double bonus = rs.getDouble("bonus");
+						int dept_id = rs.getInt("dept_id");
+						emp.setId(id);
+						emp.setEname(ename);
+						emp.setJob_id(job_id);
+						emp.setMgr(mgr);
+						emp.setJoindate(joindate);
+						emp.setSalary(salary);
+						emp.setBonus(bonus);
+						emp.setDept_id(dept_id);
+						return emp;
+					}
+				});
+				for (Emp emp : list) {
+					System.out.println(emp);
+				}
+			}
+
+			@Test
+			public void testAllToBean2(){
+				/**
+				 * 6. 查询所有记录，将其封装为Emp对象的List集合
+				 */
+				String sql = "select * from emp";
+				//这里因为我们的数据中有空值的情况，转换为Bean后，null不能作为基本数据类型的默认值
+				// org.springframework.beans.TypeMismatchException: Failed to convert property value of type 'null'
+				// to required type 'double' for property 'bonus';
+				List<Emp> list = template.query(sql, new BeanPropertyRowMapper<Emp>(Emp.class));
+				for (Emp emp : list) {
+					System.out.println(emp);
+				}
+			}
+
+			@Test
+			public void testCount(){
+				/**
+				 * 7. 查询总记录数
+				 */
+				String sql = "select count(id) from emp";
+				Long total = template.queryForObject(sql, Long.class);
+				System.out.println(total);
+			}
+		}
+
+网络编程基础知识
+	C/S结构：全称为Client/Server结构，是指客户端和服务器结构。常见程序有ＱＱ、迅雷等软件。
+	B/S结构：全称为Browser/Server结构，是指浏览器和服务器结构。常见浏览器有谷歌、火狐等。
+		两种架构各有优势，但是无论哪种架构，都离不开网络的支持。网络编程，就是在一定的协议下，实现两台计算机的通信的程序。
+	TCP/IP协议：传输控制协议/因特网互联协议( Transmission Control Protocol/Internet Protocol)，是Internet最基本、最广泛的协议。
+		它定义了计算机如何连入因特网，以及数据如何在它们之间传输的标准。它的内部包含一系列的用于处理数据通信的协议，
+		并采用了4层的分层模型，每一层都呼叫它的下一层所提供的协议来完成自己的需求。
+	TCP/IP协议中的四层分别是应用层、传输层、网络层和链路层，每层分别负责不同的通信功能。
+		链路层：链路层是用于定义物理传输通道，通常是对某些网络连接设备的驱动协议，例如针对光纤、网线提供的驱动。
+		网络层：网络层是整个TCP/IP协议的核心，它主要用于将传输的数据进行分组，将分组数据发送到目标计算机或者网络。
+		运输层：主要使网络程序进行通信，在进行网络通信时，可以采用TCP协议，也可以采用UDP协议。
+		应用层：主要负责应用程序的协议，例如HTTP协议、FTP协议等。
+	java.net 包中提供了两种常见的网络协议的支持：UDP 和 TCP
+	1. UDP：用户数据报协议(User Datagram Protocol)。UDP是无连接通信协议，即在数据传输时，数据的发送端和接收端不建立逻辑连接。
+		简单来说，当一台计算机向另外一台计算机发送数据时，发送端不会确认接收端是否存在，就会发出数据，同样接收端在收到数据时，也不会向发送端反馈是否收到数据。
+		由于使用UDP协议消耗资源小，通信效率高，所以通常都会用于音频、视频和普通数据的传输例如视频会议都使用UDP协议，因为这种情况即使偶尔丢失一两个数据包，也不会对接收结果产生太大影响。
+		但是在使用UDP协议传送数据时，由于UDP的面向无连接性，不能保证数据的完整性，因此在传输重要数据时不建议使用UDP协议。
+		特点:数据被限制在64kb以内，超出这个范围就不能发送了。
+		数据报(Datagram):网络传输的基本单位 
+	2. TCP：传输控制协议 (Transmission Control Protocol)。TCP协议是面向连接的通信协议，
+		即传输数据之前，在发送端和接收端建立逻辑连接，然后再传输数据，它提供了两台计算机之间可靠无差错的数据传输。
+		在TCP连接中必须要明确客户端与服务器端，由客户端向服务端发出连接请求，每次连接的创建都需要经过“三次握手”。
+		三次握手：TCP协议中，在发送数据的准备阶段，客户端与服务器之间的三次交互，以保证连接的可靠。
+			第一次握手，客户端向服务器端发出连接请求，等待服务器确认。
+			第二次握手，服务器端向客户端回送一个响应，通知客户端收到了连接请求。
+			第三次握手，客户端再次向服务器端发送确认信息，确认连接。
+		完成三次握手，连接建立后，客户端和服务器就可以开始进行数据传输了。由于这种面向连接的特性，TCP协议可以保证传输数据的安全，所以应用十分广泛，例如下载文件、浏览网页等。
+	3. IP地址：指互联网协议地址（Internet Protocol Address）
+		IPv4：是一个32位的二进制数，通常被分为4个字节，表示成`a.b.c.d` 的形式，例如`192.168.65.100` 。其中a、b、c、d都是0~255之间的十进制整数，那么最多可以表示42亿个。
+		IPv6：由于互联网的蓬勃发展，IP地址的需求量愈来愈大，但是网络地址资源有限，使得IP的分配越发紧张。
+		为了扩大地址空间，拟通过IPv6重新定义地址空间，采用128位地址长度，每16个字节一组，分成8组十六进制数，
+		表示成`ABCD:EF01:2345:6789:ABCD:EF01:2345:6789`，号称可以为全世界的每一粒沙子编上一个网址，这样就解决了网络地址资源数量不够的问题。
+	4. 端口号
+		网络的通信，本质上是两个进程（应用程序）的通信。每台计算机都有很多的进程，那么在网络通信时，如何区分这些进程呢？
+		如果说IP地址可以唯一标识网络中的设备，那么端口号就可以唯一标识设备中的进程（应用程序）了。
+		端口号：用两个字节表示的整数，它的取值范围是0~65535。
+		其中，0~1023之间的端口号用于一些知名的网络服务和应用，普通的应用程序需要使用1024以上的端口号。
+		如果端口号被另外一个服务或应用所占用，会导致当前程序启动失败。
+		利用`协议`+`IP地址`+`端口号` 三元组合，就可以标识网络中的进程了，那么进程间的通信就可以利用这个标识与其它进程进行交互。
+
+java实现服务端和客户端
+	java中提供两个类
+		1. 客户端：`java.net.Socket` 类表示。创建`Socket`对象，向服务端发出连接请求，服务端响应请求，两者建立连接开始通信。
+		2. 服务端：`java.net.ServerSocket` 类表示。创建`ServerSocket`对象，相当于开启一个服务，并等待客户端的连接。
+	
+	Socket 类：该类实现客户端套接字，套接字指的是两台设备之间通讯的端点。
+		构造方法：
+		public Socket(String host, int port):创建套接字对象并将其连接到指定主机上的指定端口号。如果指定的host是null ，则相当于指定地址为回送地址。
+		例如：Socket client = new Socket("127.0.0.1", 6666);
+		成员方法：
+		public InputStream getInputStream()： 返回此套接字的输入流。
+			如果此Scoket具有相关联的通道，则生成的InputStream 的所有操作也关联该通道。
+			关闭生成的InputStream也将关闭相关的Socket。
+		public OutputStream getOutputStream()： 返回此套接字的输出流。
+			如果此Scoket具有相关联的通道，则生成的OutputStream 的所有操作也关联该通道。
+			关闭生成的OutputStream也将关闭相关的Socket。
+		public void close()：关闭此套接字。
+			一旦一个socket被关闭，它不可再使用。
+			关闭此socket也将关闭相关的InputStream和OutputStream 。 
+		public void shutdownOutput()： 禁用此套接字的输出流。   
+			任何先前写出的数据将被发送，随后终止输出流。 
+	
+	ServerSocket类：这个类实现了服务器套接字，该对象等待通过网络的请求。
+		构造方法
+		public ServerSocket(int port) ：使用该构造方法在创建ServerSocket对象时，就可以将其绑定到一个指定的端口号上，参数port就是端口号。
+		例如： ServerSocket server = new ServerSocket(6666);
+		成员方法
+		public Socket accept()：侦听并接受连接，返回一个新的Socket对象，用于和客户端实现通信。该方法会一直阻塞直到建立连接。
+	
+	一个简单的例子：
+	使用Socket和ServerSocket创建服务端和客户端，并实现简单的通信
+		//TCPServer
+		// 输出： 你好服务器
+		package demo.net.baseDemo;
+
+		import java.io.IOException;
+		import java.io.InputStream;
+		import java.io.OutputStream;
+		import java.net.ServerSocket;
+		import java.net.Socket;
+
+		public class TCPServer {
+			public static void main(String[] args) throws IOException {
+				//1.创建服务器ServerSocket对象和系统要指定的端口号
+				ServerSocket server = new ServerSocket(8888);
+				//2.使用ServerSocket对象中的方法accept,获取到请求的客户端对象Socket
+				Socket socket = server.accept();
+				//3.使用Socket对象中的方法getInputStream()获取网络字节输入流InputStream对象
+				InputStream is = socket.getInputStream();
+				//4.使用网络字节输入流InputStream对象中的方法read,读取客户端发送的数据
+				byte[] bytes = new byte[1024];
+				int len = is.read(bytes);
+				System.out.println(new String(bytes,0,len));
+				//5.使用Socket对象中的方法getOutputStream()获取网络字节输出流OutputStream对象
+				OutputStream os = socket.getOutputStream();
+				//6.使用网络字节输出流OutputStream对象中的方法write,给客户端回写数据
+				os.write("收到谢谢".getBytes());
+				//7.释放资源(Socket,ServerSocket)
+				socket.close();
+				server.close();
+			}
+		}
+		
+		//TCPClient
+		//输出：收到谢谢
+		package demo.net.baseDemo;
+
+		import java.io.IOException;
+		import java.io.InputStream;
+		import java.io.OutputStream;
+		import java.net.Socket;
+
+		public class TCPClient {
+			public static void main(String[] args) throws IOException {
+				//1.创建一个客户端对象Socket,构造方法绑定服务器的IP地址和端口号
+				Socket socket = new Socket("127.0.0.1",8888);
+				//2.使用Socket对象中的方法getOutputStream()获取网络字节输出流OutputStream对象
+				OutputStream os = socket.getOutputStream();
+				//3.使用网络字节输出流OutputStream对象中的方法write,给服务器发送数据
+				os.write("你好服务器".getBytes());
+				//4.使用Socket对象中的方法getInputStream()获取网络字节输入流InputStream对象
+				InputStream is = socket.getInputStream();
+				//5.使用网络字节输入流InputStream对象中的方法read,读取服务器回写的数据
+				byte[] bytes = new byte[1024];
+				int len = is.read(bytes);
+				System.out.println(new String(bytes,0,len));
+				//6.释放资源(Socket)
+				socket.close();
+
+			}
+
+		}	
+	
+	客户端上传一张图片到服务端的例子
+		//客户端
+		package demo.net.upload;
+
+		import java.io.FileInputStream;
+		import java.io.IOException;
+		import java.io.InputStream;
+		import java.io.OutputStream;
+		import java.net.Socket;
+
+		public class UploadClient1 {
+			public static void main(String[] args) throws IOException {
+				//1.创建一个本地字节输入流FileInputStream对象,构造方法中绑定要读取的数据源
+				FileInputStream fis = new FileInputStream("src/demo/net/file/up.jpg");
+				//2.创建一个客户端Socket对象,构造方法中绑定服务器的IP地址和端口号
+				Socket socket = new Socket("127.0.0.1",8888);
+				//3.使用Socket中的方法getOutputStream,获取网络字节输出流OutputStream对象
+				OutputStream os = socket.getOutputStream();
+				//4.使用本地字节输入流FileInputStream对象中的方法read,读取本地文件
+				int len = 0;
+				byte[] bytes = new byte[1024];
+				while((len = fis.read(bytes))!=-1){
+					//5.使用网络字节输出流OutputStream对象中的方法write,把读取到的文件上传到服务器
+					os.write(bytes,0,len);
+				}
+
+				/*
+					解决:上传完文件,给服务器写一个结束标记
+					void shutdownOutput() 禁用此套接字的输出流。
+					对于 TCP 套接字，任何以前写入的数据都将被发送，并且后跟 TCP 的正常连接终止序列。
+				 */
+				socket.shutdownOutput();
+				//6.使用Socket中的方法getInputStream,获取网络字节输入流InputStream对象
+				InputStream is = socket.getInputStream();
+
+				System.out.println(" 已经传给服务器，等待服务器返回信息 ... ");
+
+				//7.使用网络字节输入流InputStream对象中的方法read读取服务回写的数据
+				while((len = is.read(bytes))!=-1){
+					System.out.println(new String(bytes,0,len));
+				}
+				System.out.println("读取信息结束 ... ");
+				//8.释放资源(FileInputStream,Socket)
+				fis.close();
+				socket.close();
+			}
+		}
+		
+		//服务器端
+		package demo.net.upload;
+
+		import java.io.File;
+		import java.io.FileOutputStream;
+		import java.io.IOException;
+		import java.io.InputStream;
+		import java.net.ServerSocket;
+		import java.net.Socket;
+
+		public class UploadServer1 {
+			public static void main(String[] args) throws IOException {
+				//1.创建一个服务器ServerSocket对象,和系统要指定的端口号
+				ServerSocket server = new ServerSocket(8888);
+				//2.使用ServerSocket对象中的方法accept,获取到请求的客户端Socket对象
+				Socket socket = server.accept();
+				//3.使用Socket对象中的方法getInputStream,获取到网络字节输入流InputStream对象
+				InputStream is = socket.getInputStream();
+				//4.判断src/demo/net/file/upload文件夹是否存在,不存在则创建
+				File file =  new File("src/demo/net/file/upload");
+				if(!file.exists()){
+					file.mkdirs();
+				}
+				//System.out.println(file.getAbsolutePath());
+				//5.创建一个本地字节输出流FileOutputStream对象,构造方法中绑定要输出的目的地
+				FileOutputStream fos = new FileOutputStream(file+"/1.jpg");
+				//6.使用网络字节输入流InputStream对象中的方法read,读取客户端上传的文件
+
+				System.out.println("接收到图片，正在写入到服务器的硬盘上 ...");
+
+				int len =0;
+				byte[] bytes = new byte[1024];
+				while((len = is.read(bytes))!=-1){
+					//7.使用本地字节输出流FileOutputStream对象中的方法write,把读取到的文件保存到服务器的硬盘上
+					fos.write(bytes,0,len);
+				}
+
+				System.out.println("准备给客户端写回信息 ...");
+
+				//8.使用Socket对象中的方法getOutputStream,获取到网络字节输出流OutputStream对象
+				//9.使用网络字节输出流OutputStream对象中的方法write,给客户端回写"上传成功"
+				socket.getOutputStream().write("上传成功".getBytes());
+				//10.释放资源(FileOutputStream,Socket,ServerSocket)
+				fos.close();
+				socket.close();
+				server.close();
+			}
+		}
+		开启服务器后再运行客户端，服务端运行一次后就自动停止了，输出如下：
+			客户端：
+				已经传给服务器，等待服务器返回信息 ... 
+				上传成功
+				读取信息结束 ... 
+			服务端：
+				接收到图片，正在写入到服务器的硬盘上 ...
+				准备给客户端写回信息 ...
+		
+		对上述服务器端的优化：
+			服务器应该一直处于监听状态 ， 死循环accept方法
+			使用多线程，有一个客户端上传文件,就开启一个线程,完成文件的上传
+			自定义一个文件的命名规则:防止同名的文件被覆盖，规则:域名+毫秒值+随机数
+		
+		//优化后的服务器端
+		package demo.net.upload;
+
+		import java.io.File;
+		import java.io.FileOutputStream;
+		import java.io.IOException;
+		import java.io.InputStream;
+		import java.net.ServerSocket;
+		import java.net.Socket;
+		import java.util.Random;
+
+		public class UploadServer2 {
+			public static void main(String[] args) throws IOException {
+				//1.创建一个服务器ServerSocket对象,和系统要指定的端口号
+				ServerSocket server = new ServerSocket(8888);
+				System.out.println("服务器启动 ...");
+				//2.使用ServerSocket对象中的方法accept,获取到请求的客户端Socket对象
+				/*
+					让服务器一直处于监听状态(死循环accept方法)
+					有一个客户端上传文件,就保存一个文件
+				 */
+				while(true){
+					Socket socket = server.accept();
+					String clientAddress = socket.getInetAddress().toString().replace("/","");
+					/*
+						使用多线程技术,提高程序的效率
+						有一个客户端上传文件,就开启一个线程,完成文件的上传
+					 */
+					new Thread(new Runnable() {
+						//完成文件的上传
+						@Override
+						public void run() {
+							System.out.println("-----------------------------");
+							System.out.println("开启一个线程 ...");
+							System.out.println("线程为：" + Thread.currentThread().getName());
+							System.out.println("接收到客户端为：" + clientAddress);
+							try {
+								//3.使用Socket对象中的方法getInputStream,获取到网络字节输入流InputStream对象
+								InputStream is = socket.getInputStream();
+								//4.判断src/demo/net/file/upload文件夹是否存在,不存在则创建
+								File file =  new File("src/demo/net/file/upload");
+								if(!file.exists()){
+									file.mkdirs();
+								}
+							/*
+								自定义一个文件的命名规则:防止同名的文件被覆盖
+								规则:域名+毫秒值+随机数
+							 */
+								String fileName = clientAddress + "_" + System.currentTimeMillis() + "_" + new Random().nextInt(999999)+".jpg";
+								System.out.println("保存的图片为：" + fileName);
+								//5.创建一个本地字节输出流FileOutputStream对象,构造方法中绑定要输出的目的地
+								FileOutputStream fos = new FileOutputStream(file + "\\"+fileName);
+								//6.使用网络字节输入流InputStream对象中的方法read,读取客户端上传的文件
+								int len =0;
+								byte[] bytes = new byte[1024];
+								while((len = is.read(bytes))!=-1){
+									//7.使用本地字节输出流FileOutputStream对象中的方法write,把读取到的文件保存到服务器的硬盘上
+									fos.write(bytes,0,len);
+								}
+
+								//8.使用Socket对象中的方法getOutputStream,获取到网络字节输出流OutputStream对象
+								//9.使用网络字节输出流OutputStream对象中的方法write,给客户端回写"上传成功"
+								socket.getOutputStream().write("上传成功".getBytes());
+								//10.释放资源(FileOutputStream,Socket,ServerSocket)
+								fos.close();
+								socket.close();
+							}catch (IOException e){
+								System.out.println(e);
+							}
+						}
+					}).start();
+				}
+				//服务器就不用关闭
+				//server.close();
+			}
+		}
+		开启服务器后再运行客户端三次，服务器一直处于监听状态，输出如下：
+		客户端：
+			已经传给服务器，等待服务器返回信息 ... 
+			上传成功
+			读取信息结束 ... 
+		服务端：
+			服务器启动 ...
+			-----------------------------
+			开启一个线程 ...
+			线程为：Thread-0
+			接收到客户端为：127.0.0.1
+			保存的图片为：127.0.0.1_1568558792010_717422.jpg
+			-----------------------------
+			开启一个线程 ...
+			线程为：Thread-1
+			接收到客户端为：127.0.0.1
+			保存的图片为：127.0.0.1_1568558796626_363074.jpg
+			-----------------------------
+			开启一个线程 ...
+			线程为：Thread-2
+			接收到客户端为：127.0.0.1
+			保存的图片为：127.0.0.1_1568558809522_867966.jpg
+	
+	实现 B/S 服务器
+	先看一个简单例子：
+		package demo.net.bs_demo;
+
+		import java.io.IOException;
+		import java.io.InputStream;
+		import java.net.ServerSocket;
+		import java.net.Socket;
+
+		public class BaseDemo {
+			public static void main(String[] args) throws IOException {
+				ServerSocket server = new ServerSocket(8000);
+				Socket socket = server.accept();
+				InputStream in = socket.getInputStream();
+				byte[] bytes = new byte[1024];
+				int len = in.read(bytes);
+				System.out.println(new String(bytes,0,len));
+				socket.close();
+				server.close();
+			}
+		}
+		在浏览器访问： http://localhost:8000/ 后，服务器端输出如下：
+			GET / HTTP/1.1
+			Host: localhost:8000
+			Connection: keep-alive
+			Upgrade-Insecure-Requests: 1
+			User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36
+			Sec-Fetch-Mode: navigate
+			Sec-Fetch-User: ?1
+			Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3
+			Sec-Fetch-Site: none
+			Accept-Encoding: gzip, deflate, br
+			Accept-Language: zh-CN,zh;q=0.9
+			Cookie: _ga=GA1.1.1778445080.1563089064; csrftoken=ZnWKg5ZuuSYd3dwts5iqnfjQvSnp21n9OiuFZAKz11WdGZuXENLhAxYckiLHFTsI
+
+	接下来是一个处理浏览器的访问请求，并返回请求页面的服务器端代码
+		页面放在和 src 同级的目录 webDemo 下
+		package demo.net.bs_demo;
+
+		import java.io.IOException;
+		import java.net.*;
+		import java.io.*;
+
+		public class BrowserServer {
+			public static void main(String[] args) throws IOException {
+				//创建一个服务器ServerSocket,和系统要指定的端口号
+				ServerSocket server = new ServerSocket(8080);
+				//使用accept方法获取到请求的客户端对象(浏览器)
+				Socket socket = server.accept();
+				//使用Socket对象中的方法getInputStream,获取到网络字节输入流InputStream对象
+				InputStream is = socket.getInputStream();
+				//使用网络字节输入流InputStream对象中的方法read读取客户端的请求信息
+				/*byte[] bytes = new byte[1024];
+				int len = 0;
+				while((len = is.read(bytes))!=-1){
+					System.out.println(new String(bytes,0,len));
+				}*/
+
+				//把is网络字节输入流对象,转换为字符缓冲输入流，使用缓冲流更快
+				BufferedReader br = new BufferedReader(new InputStreamReader(is));
+				//把客户端请求信息的第一行读取出来 "GET /webDemo/index.html HTTP/1.1"
+				String line = br.readLine();
+				//System.out.println(line);
+				//把读取的信息进行切割,只要中间部分 "/webDemo/index.html"
+				String[] arr = line.split(" ");
+				//把路径前边的/去掉,进行截取 "webDemo/index.html"
+				String htmlpath = arr[1].substring(1);
+				//System.out.println(htmlpath);
+				//创建一个本地字节输入流,构造方法中绑定要读取的html路径
+				FileInputStream fis = new FileInputStream(htmlpath);
+				//使用Socket中的方法getOutputStream获取网络字节输出流OutputStream对象
+				OutputStream os = socket.getOutputStream();
+
+				// 写入HTTP协议响应头,固定写法
+				os.write("HTTP/1.1 200 OK\r\n".getBytes());
+				os.write("Content-Type:text/html\r\n".getBytes());
+				// 必须要写入空行,否则浏览器不解析
+				os.write("\r\n".getBytes());
+
+				//一读一写复制文件,把服务读取的html文件回写到客户端
+				int len = 0;
+				byte[] bytes = new byte[1024];
+				while((len = fis.read(bytes))!=-1){
+					os.write(bytes,0,len);
+				}
+
+				//释放资源
+				fis.close();
+				socket.close();
+				server.close();
+			}
+		}
+		在浏览器访问：http://localhost:8080/webDemo/index.html，会出现相应的页面，但页面中的图片显示不正常
+		发现浏览器中出现很多的叉子,说明浏览器没有读取到图片信息导致。
+		浏览器工作原理是遇到图片会开启一个线程进行单独的访问,因此在服务器端加入线程技术。
+		优化后的服务器端代码如下：
+		package demo.net.bs_demo;
+
+		import java.io.*;
+		import java.net.*;
+
+		public class BrowserServerThread {
+			public static void main(String[] args) throws IOException {
+				//创建一个服务器ServerSocket,和系统要指定的端口号
+				ServerSocket server = new ServerSocket(8080);
+				System.out.println("服务器启动 ...");
+				/*
+					浏览器解析服务器回写的html页面,页面中如果有图片,那么浏览器就会单独的开启一个线程,读取服务器的图片
+					我们就的让服务器一直处于监听状态,客户端请求一次,服务器就回写一次
+				 */
+				while(true){
+					//使用accept方法获取到请求的客户端对象(浏览器)
+					Socket socket = server.accept();
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								//使用Socket对象中的方法getInputStream,获取到网络字节输入流InputStream对象
+								InputStream is = socket.getInputStream();
+								//使用网络字节输入流InputStream对象中的方法read读取客户端的请求信息
+								/*byte[] bytes = new byte[1024];
+								int len = 0;
+								while((len = is.read(bytes))!=-1){
+									System.out.println(new String(bytes,0,len));
+								}*/
+
+								//把is网络字节输入流对象,转换为字符缓冲输入流，使用缓冲流更快
+								BufferedReader br = new BufferedReader(new InputStreamReader(is));
+								//把客户端请求信息的第一行读取出来 "GET /webDemo/index.html HTTP/1.1"
+								String line = br.readLine();
+								//System.out.println(line);
+								//把读取的信息进行切割,只要中间部分 "/webDemo/index.html"
+								String[] arr = line.split(" ");
+								//把路径前边的/去掉,进行截取 "webDemo/index.html"
+								String htmlpath = arr[1].substring(1);
+								//System.out.println(htmlpath);
+								//创建一个本地字节输入流,构造方法中绑定要读取的html路径
+								FileInputStream fis = new FileInputStream(htmlpath);
+								//使用Socket中的方法getOutputStream获取网络字节输出流OutputStream对象
+								OutputStream os = socket.getOutputStream();
+
+								// 写入HTTP协议响应头,固定写法
+								os.write("HTTP/1.1 200 OK\r\n".getBytes());
+								os.write("Content-Type:text/html\r\n".getBytes());
+								// 必须要写入空行,否则浏览器不解析
+								os.write("\r\n".getBytes());
+
+								//一读一写复制文件,把服务读取的html文件回写到客户端
+								int len = 0;
+								byte[] bytes = new byte[1024];
+								while((len = fis.read(bytes))!=-1){
+									os.write(bytes,0,len);
+								}
+
+								//释放资源
+								fis.close();
+								socket.close();
+							}catch (IOException e){
+								e.printStackTrace();
+							}
+						}
+					}).start();
+
+
+				}
+
+
+				//server.close();
+			}
+		}
+		再次在浏览器访问：http://localhost:8080/webDemo/index.html，会出现相应的页面，并且页面中的图片显示正常
+	
+
+	
