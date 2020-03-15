@@ -1,0 +1,949 @@
+微服务
+
+架构演化过程：集中式架构-->水平拆分-->垂直拆分-->分布式服务
+
+集中式架构
+当网站流量很小时，只需一个应用，将所有功能都部署在一起，以减少部署节点和成本。此时，用于简化增删改查工作量的数据访问框架(ORM)是影响项目开发的关键。
+
+存在的问题：
+- 代码耦合，开发维护困难
+- 无法针对不同模块进行针对性优化
+- 无法水平扩展
+- 单点容错率低，并发能力差
+
+
+水平拆分
+将集中式架构拆分成表现层、业务层、持久层等部分。
+这种方式解决了一些耦合，但集中式架构中的很多问题依然存在。
+
+
+垂直拆分
+当访问量逐渐增大，单一应用无法满足需求，此时为了应对更高的并发和业务需求，我们根据业务功能对系统进行拆分，不同业务单独部署。
+
+优点：
+- 系统拆分实现了流量分担，解决了并发问题
+- 可以针对不同模块进行优化
+- 方便水平扩展，负载均衡，容错率提高
+
+缺点：
+- 系统间相互独立，会有很多重复开发工作，影响开发效率
+
+
+分布式服务
+当垂直应用越来越多，应用之间交互不可避免，将核心业务抽取出来，作为独立的服务，逐渐形成稳定的服务中心，使前端应用能更快速的响应多变的市场需求。
+此时，用于提高业务复用及整合的分布式调用是关键。
+
+优点：
+- 将基础服务进行了抽取，系统间相互调用，提高了代码复用和开发效率
+
+缺点：
+- 系统间耦合度变高，调用关系错综复杂，难以维护
+
+
+流动计算架构（SOA）
+SOA ：面向服务的架构
+当服务越来越多，容量的评估，小服务资源的浪费等问题逐渐显现，此时需增加一个调度中心基于访问压力实时管理集群容量，提高集群利用率。
+此时，用于提高机器利用率的资源调度和治理中心(SOA)是关键。阿里巴巴的Dubbo是SOA的典型实现。
+
+以前出现了什么问题？
+- 服务越来越多，需要管理每个服务的地址
+- 调用关系错综复杂，难以理清依赖关系
+- 服务过多，服务状态难以管理，无法根据服务情况动态管理
+
+服务治理要做什么？
+- 服务注册中心，实现服务自动注册和发现，无需人为记录服务地址
+- 服务自动订阅，服务列表自动推送，服务调用透明化，无需关心依赖关系
+- 动态监控服务状态监控报告，人为控制服务状态
+
+缺点：
+- 服务间会有依赖关系，一旦某个环节出错会影响较大
+- 服务关系复杂，运维、测试部署困难，不符合DevOps思想
+
+
+微服务
+前面说的SOA，英文翻译过来是面向服务。微服务，似乎也是服务，都是对系统进行拆分。因此两者非常容易混淆，但其实却有一些差别：
+
+微服务的特点：
+- 单一职责：微服务中每一个服务都对应唯一的业务能力，做到单一职责
+- 微：微服务的服务拆分粒度很小，例如一个用户管理就可以作为一个服务。每个服务虽小，但“五脏俱全”。
+- 面向服务：面向服务是说每个服务都要对外暴露Rest风格服务接口API。并不关心服务的技术实现，做到与平台和语言无关，也不限定用什么技术实现，只要提供Rest的接口即可。
+- 自治：自治是说服务间互相独立，互不干扰
+  - 团队独立：每个服务都是一个独立的开发团队，人数不能过多。
+  - 技术独立：因为是面向服务，提供Rest接口，使用什么技术没有别人干涉
+  - 前后端分离：采用前后端分离开发，提供统一Rest接口，后端不用再为PC、移动段开发不同接口
+  - 数据库分离：每个服务都使用自己的数据源
+  - 部署独立，服务间虽然有调用，但要做到服务重启不影响其它服务。有利于持续集成和持续交付。每个服务都是独立的组件，可复用，可替换，降低耦合，易维护
+
+
+服务调用方式
+无论是微服务还是SOA，都面临着服务间的远程调用。常见的远程调用方式有以下2种:RPC和HTTP。
+
+RPC：
+Remote Produce Call远程过程调用，类似的还有RMI。自定义数据格式，基于原生TCP通信，速度快，效率高。
+早期的webservice，现在热门的dubbo，都是RPC的典型代表。
+
+Http：
+http其实是一种网络传输协议，基于TCP，规定了数据传输的格式。现在客户端浏览器与服务端通信基本都是采用Http协议，也可以用来进行远程服务调用。
+缺点是消息封装臃肿，优势是对服务的提供和调用方没有任何技术限定，自由灵活，更符合微服务理念。现在热门的Rest风格，就可以通过http协议来实现。
+
+Http客户端工具
+HttpClient、OKHttp、URLConnection
+
+使用HttpClient发起远程调用请求
+
+get请求
+public class HttpTests {
+
+    CloseableHttpClient httpClient;
+
+    // 序列化与反序列化
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    @Before
+    public void init() {
+        httpClient = HttpClients.createDefault();
+    }
+
+    @Test
+    public void testGet() throws IOException {
+        HttpGet request = new HttpGet("http://www.baidu.com/s?ie=UTF-8&wd=java");
+        String response = this.httpClient.execute(request, new BasicResponseHandler());
+        System.out.println(response);
+    }
+}
+
+post请求
+@Test
+public void testPost() throws IOException {
+	HttpPost request = new HttpPost("https://www.oschina.net/");
+	request.setHeader("User-Agent",
+			"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36");
+	String response = this.httpClient.execute(request, new BasicResponseHandler());
+	System.out.println(response);
+}
+
+访问我们自己的接口
+@Test
+public void testGetPojo() throws IOException {
+	HttpGet request = new HttpGet("http://localhost:8888/user/42");
+	String response = this.httpClient.execute(request, new BasicResponseHandler());
+	System.out.println(response);
+	User user = MAPPER.readValue(response, User.class);
+	System.out.println(user);
+	String usertToString = MAPPER.writeValueAsString(user);
+	System.out.println(usertToString);
+}
+
+RestTemplate
+Spring提供了一个RestTemplate模板工具类，对基于Http的客户端进行了封装，并且实现了对象与json的序列化和反序列化，非常方便。
+RestTemplate并没有限定Http的客户端类型，而是进行了抽象，目前常用的3种都有支持：HttpClient、OkHttp、JDK原生的URLConnection（默认的）。
+
+注册一个RestTemplate对象并交给spring容器
+@SpringBootApplication
+public class HttpDemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(HttpDemoApplication.class, args);
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+
+在测试类汇总注入RestTemplate
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = HttpDemoApplication.class)
+public class HttpDemoApplicationTests {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Test
+    public void httpGet() {
+        User user = this.restTemplate.getForObject("http://localhost:8888/user/42", User.class);
+        System.out.println(user);
+    }
+
+}
+
+通过RestTemplate的getForObject()方法，传递url地址及实体类的字节码，RestTemplate会自动发起请求，接收响应，并且帮我们对响应结果进行反序列化。
+
+
+SpringCloud
+SpringCloud是微服务架构的一种实现方式，实现了：配置管理，服务发现，智能路由，负载均衡，熔断器，控制总线，集群状态等等功能。
+主要涉及的组件包括：
+Eureka：服务治理组件，包含服务注册中心，服务注册与发现机制的实现。（服务治理，服务注册/发现） 
+Zuul：网关组件，提供智能路由，访问过滤功能 
+Ribbon：客户端负载均衡的服务调用组件（客户端负载） 
+Feign：服务调用，给予Ribbon和Hystrix的声明式服务调用组件 （声明式服务调用）
+Hystrix：容错管理组件，实现断路器模式，帮助服务依赖中出现的延迟和为故障提供强大的容错能力。(熔断、断路器，容错) 
+
+
+创建一个服务提供方（figo_service_provider）和一个服务调用方（figo_service_customer）
+
+服务提供者
+启动器
+@SpringBootApplication
+@MapperScan("cn.figo.service.mapper") //mapper接口的包扫描
+public class FigoServiceProviderApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(FigoServiceProviderApplication.class, args);
+	}
+
+}
+控制器
+@RestController
+@RequestMapping("user")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("{id}")
+    public User queryUserById(@PathVariable("id") Long id){
+        return this.userService.queryUserById(id);
+    }
+}
+业务层
+@Service
+public class UserService {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    public User queryUserById(Long id){
+        return this.userMapper.selectByPrimaryKey(id);
+    }
+}
+持久化接口
+public interface UserMapper extends Mapper<User>{
+}
+配置文件
+server:
+  port: 8081
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/ssm_mybatis?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: 123456
+mybatis:
+  type-aliases-package: cn.figo.service.pojo
+
+服务调用者
+启动器
+@SpringBootApplication
+public class FigoServiceCustomerApplication {
+
+	@Bean
+	public RestTemplate restTemplate(){
+		return new RestTemplate();
+	}
+
+	public static void main(String[] args) {
+		SpringApplication.run(FigoServiceCustomerApplication.class, args);
+	}
+
+}
+控制器
+@Controller
+@RequestMapping("customer/user")
+public class UserController {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @GetMapping
+    @ResponseBody
+    private User queryUserById(@RequestParam("id") Long id){
+        return this.restTemplate.getForObject("http://localhost:8081/user/" + id, User.class);
+    }
+}
+配置文件
+server:
+  port: 80
+
+这里的provider和customer存在下列问题
+	在consumer中，我们把url地址硬编码到了代码中，不方便后期维护
+	consumer需要记忆provider的地址，如果出现变更，可能得不到通知，地址将失效
+	consumer不清楚provider的状态，服务宕机也不知道
+	provider只有1台服务，不具备高可用性
+	即便provider形成集群，consumer还需自己实现负载均衡
+
+
+因此这里需要进行服务管理，状态监控，动态路由，负载均衡，容灾处理，同一配置，可以使用SpringCloud的Eureka进行服务管理。
+
+Eureka
+
+Eureka架构中的三个核心角色：
+服务注册中心
+	Eureka的服务端应用，提供服务注册和发现功能，就是刚刚我们建立的figo_eureka。
+服务提供者
+	提供服务的应用，可以是SpringBoot应用，也可以是其它任意技术实现，只要对外提供的是Rest风格服务即可。本例中就是我们实现的figo_service_provider。
+服务消费者
+	消费应用从注册中心获取服务列表，从而得知每个服务方的信息，知道去哪里调用服务方。本例中就是我们实现的figo_service_consumer。
+	
+创建一个eurekaserver的module
+<parent>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-parent</artifactId>
+	<version>2.0.6.RELEASE</version>
+	<relativePath/> <!-- lookup parent from repository -->
+</parent>
+
+<groupId>cn.figo.eureka</groupId>
+<artifactId>figo_eureka</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<name>figo_eureka</name>
+<description>Demo project for Spring Boot</description>
+
+<properties>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	<java.version>1.8</java.version>
+	<spring-cloud.version>Finchley.SR2</spring-cloud.version>
+</properties>
+
+<dependencies>
+	<dependency>
+		<groupId>org.springframework.cloud</groupId>
+		<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+	</dependency>
+
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-test</artifactId>
+		<scope>test</scope>
+	</dependency>
+
+</dependencies>
+
+<!--统一管理依赖的版本号-->
+<dependencyManagement>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-dependencies</artifactId>
+			<version>${spring-cloud.version}</version>
+			<type>pom</type>
+			<scope>import</scope>
+		</dependency>
+	</dependencies>
+</dependencyManagement>
+
+<build>
+	<plugins>
+		<plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+		</plugin>
+	</plugins>
+</build>
+
+设置eureka启动器
+@SpringBootApplication
+@EnableEurekaServer  //启用Eureka服务端
+public class FigoEurekaApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(FigoEurekaApplication.class, args);
+	}
+
+}
+
+eureka服务的配置文件
+server:
+  port: 10086
+spring:
+  application:
+    name: figo_eureka  #作为微服务的名称
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:${server.port}/eureka
+
+在服务提供方和消费方引入eureka-client依赖
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+在服务提供方和消费方启动器开启eureka服务发现
+@EnableDiscoveryClient  //启用eureka客户端，也可以用 @EnableEurekaClient
+
+在服务提供方和消费方配置eureka的地址
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:10086/eureka
+
+在消费方可以获取提供方的服务列表
+// 拉去服务提供方的所有服务列表
+@Autowired
+private DiscoveryClient discoveryClient;
+
+@GetMapping
+@ResponseBody
+private User queryUserById(@RequestParam("id") Long id){
+	List<ServiceInstance> instances = discoveryClient.getInstances("service_provider");
+	ServiceInstance serviceInstance = instances.get(0);
+	return this.restTemplate.getForObject("http://" + serviceInstance.getHost() +":"+serviceInstance.getPort()+"/user/" + id, User.class);
+}
+	  
+	
+高可用的eureka
+这里的eureka不是高可用的，我们只有一个EurekaServer，事实上EurekaServer也可以是一个集群，形成高可用的Eureka中心。
+多个Eureka Server之间也会互相注册为服务，当服务提供者注册到Eureka Server集群中的某个节点时，
+该节点会把服务的信息同步给集群中的每个节点，从而实现数据同步。
+因此，无论客户端访问到Eureka Server集群中的任意一个节点，都可以获取到完整的服务列表信息。
+
+相互注册
+server:
+  port: 10086
+spring:
+  application:
+    name: figo_eureka  #作为微服务的名称
+eureka:
+  client:
+    service-url:
+      # defaultZone: http://localhost:${server.port}/eureka
+      defaultZone: http://localhost:10087/eureka
+
+server:
+  port: 10087
+spring:
+  application:
+    name: figo_eureka  #作为微服务的名称
+eureka:
+  client:
+    service-url:
+      # defaultZone: http://localhost:${server.port}/eureka
+      defaultZone: http://localhost:10086/eureka
+
+服务方心跳检测
+服务提供者在启动时，会检测配置属性中的：eureka.client.register-with-eureka=true 参数是否正确，事实上默认就是true。
+如果值确实为true，则会向EurekaServer发起一个Rest请求，并携带自己的元数据信息，Eureka Server会把这些信息保存到一个双层Map结构中。
+Map<serviceId,Map<服务实例名,实例对象>>
+第一层Map的Key就是服务id，一般是配置中的spring.application.name属性
+第二层Map的key是服务的实例id。一般host+ serviceId + port，例如：locahost:service—_provider:8081
+	值则是服务的实例对象，也就是说一个服务，可以同时启动多个不同实例，形成集群。
+
+心跳检测（服务续约）
+在注册服务完成以后，服务提供者会维持一个心跳（定时向EurekaServer发起Rest请求），告诉EurekaServer：“我还活着”。这个我们称为服务的续约（renew）；
+lease-renewal-interval-in-seconds：服务续约(renew)的间隔，默认为30秒
+lease-expiration-duration-in-seconds：服务失效时间，默认值90秒
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:10086/eureka
+    register-with-eureka: true  #服务方启动时，该参数为true则注册给eureka，默认为true
+  instance:
+    lease-renewal-interval-in-seconds: 15  #心跳时间
+    lease-expiration-duration-in-seconds: 5  #过期时间
+
+消费方更新间隔时间	
+当服务消费者启动时，会检测eureka.client.fetch-registry=true参数的值，如果为true，则会拉取Eureka Server服务的列表只读备份，然后缓存在本地。
+并且每隔30秒会重新获取并更新数据。我们可以通过下面的参数来修改：registry-fetch-interval-seconds: 5
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:10086/eureka
+    fetch-registry: true
+    registry-fetch-interval-seconds: 5
+	
+eureka注册中心失效剔除和自我保护
+当服务进行正常关闭操作时，它会触发一个服务下线的REST请求给Eureka Server，告诉服务注册中心：“我要下线了”。服务中心接受到请求之后，将该服务置为下线状态。
+
+有些时候，我们的服务提供方并不一定会正常下线，可能因为内存溢出、网络故障等原因导致服务无法正常工作。Eureka Server需要将这样的服务剔除出服务列表。
+因此它会开启一个定时任务，每隔60秒对所有失效的服务（超过90秒未响应）进行剔除。
+可以通过eureka.server.eviction-interval-timer-in-ms参数对其进行修改，单位是毫秒。
+这个会对我们开发带来极大的不变，你对服务重启，隔了60秒Eureka才反应过来。开发阶段可以适当调整，比如：5秒。
+eureka:
+  client:
+    service-url:
+      # defaultZone: http://localhost:${server.port}/eureka
+      defaultZone: http://localhost:10086/eureka
+  server:
+    eviction-interval-timer-in-ms: 5000
+
+
+Ribbon
+因为Eureka中已经集成了Ribbon，所以我们无需引入新的依赖
+启动多个服务提供方，在服务消费方开启ribbon使用负载均衡  @LoadBalanced
+在消费方的启动类中的RestTemplate方法上使用@LoadBalanced注解
+@Bean
+@LoadBalanced  //开启负载均衡
+public RestTemplate restTemplate(){
+	return new RestTemplate();
+}
+开启ribbon负载均衡后，就可以使用服务名来调用提供方的服务，服务方根据负载均衡器来选择合适的服务实例。
+
+开启@LoadBalanced后，不能直接访问提供方的具体主机名和端口号，否则报错 java.lang.IllegalStateException: No instances available for localhost
+服务名不要使用下划线，否则报错 Request URI does not contain a valid hostname: http://service_provider/user/42
+
+最终我们在消费方的控制器使用以下代码就可以实现远程服务调用（负载均衡）
+@Controller
+@RequestMapping("customer/user")
+public class UserController {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @GetMapping
+    @ResponseBody
+    private User queryUserById(@RequestParam("id") Long id){
+        return this.restTemplate.getForObject("http://service-provider/user/" + id,User.class);
+    }
+}
+
+在LoadBalancerInterceptor.class的源码中，我们可以看到调用的uri中还是service-provider，
+执行进入RibbonLoadBalancerClient.class时，Ribbon以默认方式分配了具体的服务实例。
+
+RibbonLoadBalancerClient.class 源码中有获取服务实例的代码
+public ServiceInstance choose(String serviceId) {
+	Server server = this.getServer(serviceId);
+	return server == null ? null : new RibbonLoadBalancerClient.RibbonServer(serviceId, server, this.isSecure(server, serviceId), this.serverIntrospector(serviceId).getMetadata(server));
+}
+
+默认是采用轮询的负载均衡策略
+测试一下查看效果
+@SpringBootTest
+@RunWith(SpringRunner.class)
+public class RibbonLoadBalanceTest {
+
+    @Autowired
+    private RibbonLoadBalancerClient client;
+
+    @Test
+    public void test(){
+        for (int i = 0; i < 50; i++) {
+            ServiceInstance serviceInstance = this.client.choose("service-provider");
+            System.out.println(serviceInstance.getHost() + ":" + serviceInstance.getPort());
+        }
+    }
+}
+
+通过源码，RibbonLoadBalancerClient-->ZoneAwareLoadBalancer-->BaseLoadBalancer 找到负载均衡选择服务器的规则代码：
+chooseServer()方法中调用了rule，rule是一个接口，BaseLoadBalancer 中的 DEFAULT_RULE = new RoundRobinRule(); 即轮询负载均衡。
+除了轮询策略外，还有随机策略，可以在消费方配置文件中指定。
+service-provider:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
+	
+
+Hystrix
+Hystrix和Eureka、Ribbon一样，也是Netflix公司的一款组件，是一种保护机制，是一个延迟和容错库，用于隔离访问远程服务、第三方库，防止出现级联失败。
+
+雪崩问题
+	微服务中，服务间调用关系错综复杂，一个请求，可能需要调用多个微服务接口才能实现，会形成非常复杂的调用链路。
+	如果一次业务请求时需要调用多个服务接口，而其中某个服务出现异常，则导致业务请求阻塞，用户得不到响应，则tomcat的这个线程无法释放；
+	那么高并发的情况下，越来越多的请求会到达，那么就会有越来越多的线程阻塞；
+	服务器支持的线程和并发数有限，请求一直阻塞，会导致服务器资源耗尽，从而导致所有其它服务都不可用，形成雪崩效应。
+
+Hystix解决雪崩问题的手段有两个：线程隔离、服务熔断。
+线程隔离：
+	Hystrix会为业务请求依赖的每个服务调用分配一个小的线程池（如果不用Hystrix，服务是直接调用的），如果线程池已满，则调用将被立即拒绝，默认不采用排队。
+	用户的请求将不再直接访问服务，而是通过线程池中的空闲线程来访问服务，如果线程池已满，或者请求超时，则会进行降级处理。
+	服务降级：优先保证核心服务，而非核心服务不可用或弱可用。
+	这样，用户的请求故障时，不会被阻塞，更不会无休止的等待或者看到系统崩溃，至少可以看到一个执行结果（例如返回友好的提示信息）。
+	服务降级虽然会导致请求失败，但是不会导致阻塞（因为只会影响这一次的请求，对其他请求没有影响），而且最多会影响这个依赖服务对应的线程池中的资源，对其它服务没有响应。
+服务熔断
+熔断器，也叫断路器，其英文单词为：Circuit Breaker 
+熔断状态机3个状态：
+Closed：关闭状态，所有请求都正常访问。
+Open：打开状态，所有请求都会被降级。Hystix会对请求情况计数，当一定时间内失败请求百分比达到阈值，则触发熔断，断路器会完全打开。
+	默认失败比例的阈值是50%，请求次数最少不低于20次。
+Half Open：半开状态，open状态不是永久的，打开后会进入休眠时间（默认是5S）。随后断路器会自动进入半开状态。
+	此时会释放部分请求通过，若这些请求都是健康的，则会完全关闭断路器，否则继续保持打开，再次进行休眠计时。
+
+降级：检查每次请求，是否请求超时，或者连接池已满
+	1.引入hystrix启动器
+	2.熔断时间，默认1s， 6s
+	3.在引导类上添加了一个注解：@EnableCircuitBreaker  @SpringCloudApplication
+	4.定义熔断方法：局部（要和被熔断的方法返回值和参数列表一致）  全局（返回值类型要被熔断的方法一致，参数列表必须为空）
+	5.@HystrixCommand(fallbackMethod="局部熔断方法名")：声明被熔断的方法
+	6.@DefaultProperties(defaultFallback="全局熔断方法名")
+
+在服务调用方使用Hystrix
+引入依赖
+	<dependency>
+		<groupId>org.springframework.cloud</groupId>
+		<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+	</dependency>
+开启熔断
+	在启动类上添加 @EnableCircuitBreaker 注解开启 服务熔断，由于我们在SpringCloud的启动类中通常都添加三个注解：
+	@SpringBootApplication、@EnableDiscoveryClient、@EnableCircuitBreaker，因此我们可以使用组合注解：@SpringCloudApplication。
+当目标服务的调用出现故障，我们希望快速失败，给用户一个友好提示。因此需要提前编写好失败时的降级处理逻辑，要使用HystixCommond来完成：
+HystixCommond注解用来指定降级的逻辑，比如这里的降级的逻辑封装在queryUserByIdFallback方法中，因此注解为：@HystrixCommand(fallbackMethod = "queryUserByIdFallback")
+编写服务降级逻辑
+	// 服务降级逻辑
+    private String queryUserByIdFallback(Long id){
+        return "服务器正忙，请稍后再试";
+    }
+	降级逻辑方法要和正常逻辑具有相同的参数列表和返回值声明
+注意：
+	在方法上加了@HystrixCommand注解后，该方法不能为private的，否则会报错：java.lang.NullPointerException: null。不加@HystrixCommand注解时，private方法可以正常访问。
+默认FallBack
+把Fallback配置加在类上，实现默认fallback
+	@DefaultProperties(defaultFallback = "defaultFallBack")：在类上指明统一的失败降级方法
+	@HystrixCommand：在方法上直接使用该注解，使用默认的降级方法。
+	defaultFallback：默认降级方法，不用任何参数，以匹配更多方法，但是返回值一定要与所有需要降级的方法一致。
+设置Hystrix服务降级的超时时间
+	通过 hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds 来设置，比如设置为6秒：
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 6000
+这时我们在服务提供方睡眠6s以上，比如睡眠20s：
+	Thread.sleep(20000);
+则消费方请求超过6秒后，自动进行熔断
+
+熔断：不再发送请求
+	1.close：闭合状态，所有请求正常方法
+	2.open：打开状态，所有请求都无法访问。如果在一定时间内容，失败的比例不小于50%或者次数不少于20次
+	3.half open：半开状态，打开状态默认5s休眠期，在休眠期所有请求无法正常访问。过了休眠期会进入半开状态，放部分请求通过
+修改queryUserById方法中的内容：
+	public String queryUserById(@RequestParam("id") Long id){
+        if (id == 1){
+            throw new RuntimeException();
+        }
+        String user = this.restTemplate.getForObject("http://service-provider/user/" + id, String.class);
+        return user;
+    }
+这样如果参数是id为1，一定失败，其它情况都成功。
+当我们疯狂访问id为1的请求时（超过20次），就会触发熔断。断路器会断开，一切请求（就算是正确的请求）都会被降级处理。
+熔断触发的默认参数可以修改：
+	circuitBreaker.requestVolumeThreshold：触发熔断的最小请求次数，默认20
+	circuitBreaker.errorThresholdPercentage：触发熔断的失败请求最小占比，默认50%
+	circuitBreaker.sleepWindowInMilliseconds：休眠时长，默认是5000毫秒
+比如，
+hystrix:
+  command:
+    default:
+      circuitBreaker:
+        requestVolumeThreshold: 10
+
+
+Feign
+前面我们虽然使用了Ribbon和Hystrix进行了负载均衡和服务熔断，但是我们的消费方代码中由于要调用提供方的服务，比如：
+String user = this.restTemplate.getForObject("http://service-provider/user/" + id, String.class);
+使用了链接直接拼接的方式，这样的硬编码不太优雅，这样我们就需要使用Feign。
+Feign在英语中是伪装的意思，这里Feign可以把Rest的请求进行隐藏，伪装成类似SpringMVC的Controller一样。
+这样我们就不用再自己拼接url，拼接参数等等操作，一切都交给Feign去做。
+
+Feign也是Netflix开发的，是一种声明式、模板化的HTTP客户端，Feign可以让我们更加便捷地调用HTTP API。
+Feign支持自带注解或JAX-RS注解。SpringCloud对Feign进行了增强，使Feign支持SpringMVC注解，并整合了Ribbon和Erueka。
+
+Feign使用：
+	1.引入openFeign启动器
+	<dependency>
+		<groupId>org.springframework.cloud</groupId>
+		<artifactId>spring-cloud-starter-openfeign</artifactId>
+	</dependency>
+	2.feign.hystrix.enable=true,开启feign的熔断功能（Feign默认不开启熔断）
+	3.在引导类上 @EnableFeignClients，不需要使用RestTemplate了，feign已经自动集成了Ribbon负载均衡的RestTemplate。
+	@SpringCloudApplication
+	@EnableFeignClients // 开启feign客户端
+	public class FigoServiceCustomerApplication {
+		
+		public static void main(String[] args) {
+			SpringApplication.run(FigoServiceCustomerApplication.class, args);
+		}
+	}
+	4.创建一个接口，在接口添加@FeignClient(value="服务id", fallback=实现类.class)。
+	这是一个接口，Feign会通过动态代理，帮我们生成实现类。这点跟mybatis的mapper很像。
+	在接口中定义一些方法，这些方法的书写方式跟之前controller类似。
+	@FeignClient(value = "service-provider", fallback = UserClientFallback.class) // 标注该类是一个feign接口
+	public interface UserClient {
+
+		@GetMapping("user/{id}")
+		User queryById(@PathVariable("id") Long id);
+	}
+	5.在controller中注入userClient
+	@Controller
+	@RequestMapping("consumer/user")
+	public class UserController {
+
+		@Autowired
+		private UserClient userClient;
+
+		@GetMapping
+		@ResponseBody
+		public User queryUserById(@RequestParam("id") Long id){
+			User user = this.userClient.queryUserById(id);
+			return user;
+		}
+
+	}
+	6.创建了一个熔断类，实现feign接口，实现对应的方法，这些实现方法就是熔断方法
+	@Component
+	public class UserClientFallback implements UserClient {
+
+		@Override
+		public User queryUserById(Long id) {
+			User user = new User();
+			user.setUsername("服务器繁忙，请稍后再试！");
+			return user;
+		}
+	}
+	
+设置feign的日志级别
+1、首先设置cn.figo包下的日志级别都为debug
+	logging:
+	  level:
+		cn.figo: debug
+2、编写Frign配置类，定义日志级别
+	@Configuration
+	public class FeignLogConfiguration {
+
+		@Bean
+		Logger.Level feignLoggerLevel(){
+			return Logger.Level.FULL;
+		}
+	}
+	这里指定的Level级别是FULL，Feign支持4种级别：
+	- NONE：不记录任何日志信息，这是默认值。
+	- BASIC：仅记录请求的方法，URL以及响应状态码和执行时间
+	- HEADERS：在BASIC的基础上，额外记录了请求和响应的头信息
+	- FULL：记录所有请求和响应的明细，包括头信息、请求体、元数据。
+3、在FeignClient接口上指定配置类
+	@FeignClient(value = "service-provider", fallback = UserClientFallback.class, configuration = FeignLogConfiguration.class)
+这样设置后，可以看到每次访问的日志
+
+请求压缩
+Spring Cloud Feign 支持对请求和响应进行GZIP压缩，以减少通信过程中的性能损耗。通过下面的参数即可开启请求与响应的压缩功能：
+
+feign:
+  compression:
+    request:
+      enabled: true # 开启请求压缩
+    response:
+      enabled: true # 开启响应压缩
+同时，我们也可以对请求的数据类型，以及触发压缩的大小下限进行设置：（这里的数据类型、压缩大小下限均为默认值。）
+
+feign:
+  compression:
+    request:
+      enabled: true # 开启请求压缩
+      mime-types: text/html,application/xml,application/json # 设置压缩的数据类型
+      min-request-size: 2048 # 设置触发压缩的大小下限
+
+
+zuul
+服务网关是微服务架构中一个不可或缺的部分。通过服务网关统一向外系统提供REST API的过程中，除了具备服务路由、均衡负载功能之外，它还具备了权限控制等功能。
+Spring Cloud Netflix中的Zuul就担任了这样的一个角色，为微服务架构提供了前门保护的作用，
+同时将权限控制这些较重的非业务逻辑内容迁移到服务路由层面，使得服务集群主体能够具备更高的可复用性和可测试性。
+pom坐标
+	spring-cloud-starter-netflix-zuul
+在引导类中开启zuul
+	@EnableZuulProxy // 开启网关功能
+配置文件
+server:
+  port: 10010
+spring:
+  application:
+    name: figo-zuul
+# 编写路由规则
+zuul:
+  routes:
+    service-provider: /provider/** #路由名称，可以随便写，习惯上是服务名
+    service-customer: /consumer/**
+      # path: /service-provider/** # 这里是映射路径
+      # url: http://localhost:8081 # 映射路径对应的实际url地址
+      # serviceId: service-provider
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:10086/eureka
+配置zuul之后，就可以通过zuul访问之前的服务提供方和消费方了
+	消费方以前是：http://localhost/customer/user?id=42
+	现在可以是：http://localhost:10010/service-customer/customer/user?id=42
+	提供方以前是：http://localhost:8081/user/42
+	现在可以是：http://localhost:10010/service-provider/user/42
+IZuulFilter
+public interface IZuulFilter {
+
+	boolean shouldFilter();
+
+	Object run() throws ZuulException;
+
+}
+ZuulFilter是过滤器的顶级父类。
+public abstract ZuulFilter implements IZuulFilter{
+
+	abstract public String filterType();
+
+	abstract public int filterOrder();
+	
+	boolean shouldFilter();// 来自IZuulFilter
+
+	Object run() throws ZuulException;// IZuulFilter
+}
+四个方法解释：
+	shouldFilter：返回一个Boolean值，判断该过滤器是否需要执行。返回true执行，返回false不执行。
+	run：过滤器的具体业务逻辑。
+	filterType：返回字符串，代表过滤器的类型。包含以下4种：
+		pre：请求在被路由之前执行
+		route：在路由请求时调用
+		post：在route和errror过滤器之后调用
+		error：处理请求时发生错误调用
+	filterOrder：通过返回的int值来定义过滤器的执行顺序，数字越小优先级越高。
+zuul过滤器使用，自定义一个登录过滤器
+/**
+* @Author Figo
+* @Date 2020/3/12 19:18
+* 一个登录拦截器
+*/
+@Component
+public class LoginFilter extends ZuulFilter {
+
+	/**
+	* 过滤器的类型有四种：pre route post error
+	* @return
+	*/
+	@Override
+	public String filterType() {
+		return "pre";
+	}
+
+	/**
+	* 通过放回的int值来定义过滤器的优先级，数字越小优先级越高
+	* @return
+	*/
+	@Override
+	public int filterOrder() {
+		return 10;
+	}
+
+	/**
+	* 判断该过滤器是否会执行（是否执行run方法），放回一个boolean值,true就会执行run方法
+	* @return
+	*/
+	@Override
+	public boolean shouldFilter() {
+		return true;
+	}
+
+	/**
+	* 过滤器的具体业务逻辑
+	* 访问 http://localhost:10010/service-provider/user/42?token=xxx
+	*      http://localhost:10010/service-customer/customer/user?id=42
+	* @return
+	* @throws ZuulException
+	*/
+	@Override
+	public Object run() throws ZuulException {
+
+		// 初始化context上下文对象，servlet spring
+		RequestContext context = RequestContext.getCurrentContext();
+		//获取request对象
+		HttpServletRequest request = context.getRequest();
+		//获取参数
+		String token = request.getParameter("token");
+		if (StringUtils.isBlank(token)){
+			// 如果模拟的登录参数为空，则不转发请求
+			context.setSendZuulResponse(false);
+			// 响应状态码，401-身份未认证
+			context.setResponseStatusCode(HttpStatus.SC_UNAUTHORIZED);
+			// 设置响应提示
+			context.setResponseBody("request error!");
+		}
+		// 返回值null，就代表该过滤器啥都不做
+		return null;
+	}
+}
+Zuul中默认就已经集成了Ribbon负载均衡和Hystix熔断机制。
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 6000 # 设置hystrix的超时时间为6000ms
+
+SpringCloud总结
+SpringCloud：在springboot的基础上构建微服务框架。
+	1、引入组件的启动器 2、覆盖默认配置 3、在引导类上添加相应的注解
+eureka：注册中心，服务的注册于发现
+	服务端：
+		1、引入服务端启动器：eureka-server 
+		2、添加配置
+			spring.application.name 服务名
+			eureka.client.service-url.defaultZone http://localhost:10086/eureka
+			剔除无效连接的间隔时间 eureka.server.eviction-interval-timer-in-ms
+			关闭自我保护 eureka.server.enable-self-preservation
+		3、@EnableEurekaServer 开启eureka服务端功能
+	客户端：
+		1、引入启动器：eureka-client
+		2、添加配置
+			spring.application.name
+			eureka.client.service-url.defaultZone
+			心跳时间 eureka.instance.lease-renewal-interval-in-seconds
+			过期时间 eureka.instance.lease-expiration-duration-in-seconds
+			是否注册给eureka容器 eureka.client.register-with-eureka
+			是否拉取服务列表 eureka.client.fetch-registry
+			拉取服务的间隔时间 eureka.client.registry-fetch-interval-seconds
+		3、启用eureka客户端：@EnableDiscoveryClient
+Ribbon：负载均衡组件
+	eureka、feign以及zuul已集成。
+	配置负载均衡策略：<service-provider（服务名）>.ribbon.NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule（负载均衡策略全路径）
+	@LoadBalanced 在RestTemplate的@Bean方法上
+hystrix：容错组件
+降级：
+	1、引入hystrix启动器
+	2、添加配置，超时时间的配置：hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 6000
+	3、启用熔断组件 @EnableCircuitBreaker
+	组合注解：@SpringCloudApplication，包含了@SpringBootApplication和@EnableDiscveryClient
+	局部熔断：返回值和参数列表和被熔断的方法一致
+		在被熔断的方法上 @HystrixCommand(fallbackMethod="熔断方法名")
+	全局熔断：返回值和被熔断的方法返回值一致，不能有参数列表
+		在类上 @DefaultProperties(defaultFallbck="全局熔断方法名")
+		在具体的被熔断方法上 @HystrixCommand
+熔断：
+	1、close：关闭状态
+		所有请求都正常访问
+	2、open：打开状态
+		所有请求都无法访问
+		触发：连续失败的比例大于50%或者失败次数不少于20
+		维持5s的休眠时间
+	3、half open：半开状态
+		释放部分请求通过，如果正常就进入close状态，如果不正常就进入open状态
+		触发：休眠时间之后
+feign：远程调用组件，集成ribbon和hystrix
+	1、引入feign的启动器
+	2、开启熔断：feign.hystrix.enable=true
+	3、开启feign的功能：@EnableFeignClients
+	4、实现：定义一个接口，使用注解@FeignClient(value="服务名", fallback=实现类.class)，方法上的注解使用的都是springMVC的注解
+zuul：网关组件，有路由和过滤器功能
+    1、引入启动器
+	2、配置
+		路由前缀：zuul.prefix
+		四种路由配置方式
+			1、
+			zuul.routes.<路由名>.path=/service-provider/**
+			zuul.routes.<路由名>.url=http://localhost:8081
+			2、
+			zuul.routes.<路由名>.path=/service-provider/**
+			zuul.routes.<路由名>.serviceId=service-provider
+			3、
+			zuul.routes.<路由名:服务名>=/service-provider/**
+			4、
+			默认服务的入口就是以服务名为前缀（不配置）
+	3、开启zuul网关组件 @EnableZuulProxy
+	4、自定义过滤器
+		接口：IZuulFilter，默认的抽象实现类：ZuulFilter
+		filterType：pre、post、route、error
+		filterOrder：执行顺序，返回值越小优先级越高
+		shouldFilter：是否执行run方法，true为执行
+		run：过滤器的具体逻辑
+		四种执行顺序：
+			pre-->route-->post
+			异常：
+				pre或者route出现异常，直接执行error-->post
+				post出现异常，error-->响应
+				error出现异常，error-->post
