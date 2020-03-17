@@ -46,3 +46,75 @@ handou-item：商品聚合模块
     handou-item-service：负责商品模块对内业务的子模块
 handou-common：通用工具类模块
 
+es6语法
+var 有一个问题，就是定义的变量有时会莫名奇妙的成为全局变量。let 所声明的变量，只在 let 命令所在的代码块内有效。const 声明的变量是常量，不能被修改。
+
+ES6为字符串扩展了几个新的API：
+    includes()：返回布尔值，表示是否找到了参数字符串。
+    startsWith()：返回布尔值，表示参数字符串是否在原字符串的头部。
+    endsWith()：返回布尔值，表示参数字符串是否在原字符串的尾部。
+
+在两个`之间的部分都会被作为字符串的值，不管你任意换行，比如：
+    let str = `hello
+        world`
+
+解构表达式：结构数组和对象
+    let arr = [1,2,3]
+    const [x,y,z] = arr; // x，y，z将与arr中的每个位置对应来取值
+    const person = {name:"jack",age:21,language: ['java','js','css']}
+    const {name,age,language} = person;  // 解构表达式获取值
+
+给函数设置默认值
+es6可以设默认值：
+    function fun(a , b = 1) {
+        return a / b;
+    }
+es6之前需要这样设置：
+    function fun(a , b) {
+        // 判断b是否为空，为空就给默认值1
+        b = b || 1;
+        return a / b;
+    }
+
+箭头函数： ()=>{}
+一个参数：
+    let fun = (i) => {console.log(i)} 可以简写为：
+    let fun = i => console.log(i);
+    调用： fun(10);
+多个参数：
+    let fun = (i,j) => {
+        const k = i+j;
+        console.log(k);
+        }
+    调用： fun(10,20);
+对象的函数属性简写:
+    let person = {
+        name: "jack",
+        // 以前：
+        eat1: function (food) {
+            console.log(this.name + "在吃" + food);
+        },
+        // 箭头函数版：
+        eat2: food => console.log(person.name + "在吃" + food), //这里拿不到this
+        // 简写版：
+        eat3(food){
+            console.log(this.name + "在吃" + food);
+        }
+    }
+    调用：
+        person.eat1("鸡蛋");
+        person.eat2("苹果");
+        person.eat3("香蕉");
+箭头函数结合解构表达式：
+有一个对象：
+const person = {
+    name:"jack",
+    age:21,
+    language: ['java','js','css']
+}
+我们要写一个函数只输出对象中的 name 属性，可以这么写：
+function hello(person) {
+    console.log("hello," + person.name)
+}
+如果使用箭头函数结合解构函数，参数不需要传入一个大对象：
+var hi = ({name}) =>  console.log("hi," + name);
